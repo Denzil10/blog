@@ -71,6 +71,7 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <p>The bigger tool-result cost was file reads: results longer than 10k characters made up 20.5% of all tool-result text. That is a habit problem (read the function, not the whole file), and no output filter touches it.</p>
 <p><strong>Third-party token savers.</strong> I didn't test these myself; independent comparisons already have (for example <a href="https://cc.bruniaux.com/token-savings">this one</a>). Most popular tools landed within about ±7% on total cost. A couple made it worse: one shell-output rewriter came out around +7%, and one context-management tool around +52%. If a tool says it saves 60%, that is usually 60% of the slice it touches. Of a 12% slice, that is about 7% of the bill, before you count the tokens its own instructions add to every request.</p>
 <p>I'll admit this part was a little deflating. I wanted a clever fix. The real fixes were all settings.</p>
+<p>I also have a bias here, and I'd rather say it than hide it: I'd almost always rather change a setting than install a tool. A tool comes with its own instructions, its own updates and its own claims about how much it saves, and its instructions are more context sent on every request. On a bill that is 88% context, a tool that adds context has to work very hard just to break even.</p>
 <h2>What actually moved it</h2>
 <p>All five are about context. None of them make the model say less.</p>
 <h3>1. Stop sending tools nobody calls</h3>
@@ -111,7 +112,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <p>Then go after what gets sent on every turn: tool schemas you never call, skill descriptions you never read, stale context that should have been compacted, and the full rewrites when a cache expires. Check that your settings don't cancel each other out.</p>
 <p>Measure first. Then cut the 88%.</p>
 <hr />
-<p><em>That's it for this one. Next up: the steps I pulled out of the model loop entirely and turned into plain scripts, and why my agents got more reliable when they were allowed to do less. Follow along on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you've measured your own split and got a very different number, I'd like to hear how your work differs.</em></p></article>
+<p><em>That's it for this one. Next up: the steps I pulled out of the model loop entirely and turned into plain scripts, and why my agents got more reliable when they were allowed to do less. Follow along on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you've measured your own split and got a very different number, I'd like to hear how your work differs.</em></p>
+<p>— Denzil</p></article>
 <footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>

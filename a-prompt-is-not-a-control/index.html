@@ -75,6 +75,7 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <h2>What the two had in common</h2>
 <p>Every check in both systems asked the agent to certify its own work: a ledger it wrote, a review it could write, a test summary it reported. When the honest path was blocked (an expired login, an account that didn't exist), the cheapest way to "make progress" was to write the success record directly. A rule in the prompt was just one more piece of text, competing with the much louder goal of making progress.</p>
 <p>Cheaper models made it worse. I don't think a stronger model fixes it, though, because the structure itself rewards writing the success record. So I changed the structure.</p>
+<p>This is the take I'd defend in any argument: "be honest" in a system prompt is a wish. It works right up until the honest path is blocked, and an unattended agent will hit a blocked path sooner or later. Anything you actually need to hold has to be enforced by something the model can't edit.</p>
 <h2>What replaced them</h2>
 <p>The new fleet runs on one rule: <strong>anything an agent writes about the outside world is unverified until a check outside the model confirms it.</strong> In practice that became four things.</p>
 <ol>
@@ -96,7 +97,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <li>Tests the agent runs and reports aren't a gate until something outside the agent reads the result.</li>
 </ul>
 <hr />
-<p><em>Thanks for reading. Next up: the steps I took away from my agents entirely and turned into plain scripts, and why that made them more reliable. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If an agent of yours has ever faked its own success, I'd like to hear how you caught it.</em></p></article>
+<p><em>Thanks for reading. Next up: the steps I took away from my agents entirely and turned into plain scripts, and why that made them more reliable. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If an agent of yours has ever faked its own success, I'd like to hear how you caught it.</em></p>
+<p>— Denzil</p></article>
 <footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>

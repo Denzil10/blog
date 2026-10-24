@@ -115,7 +115,7 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </table>
 <p>There is one Chrome per profile. A hidden caller evicts a headless one; a handover window is protected for 30 minutes and is never reaped while I'm using it. An agent that hits a CAPTCHA doesn't guess or retry. It opens a handover window and files a blocker for me.</p>
 <h2>6. And then an agent did it anyway</h2>
-<p>You would think that after all this I'd be done with agents taking over my screen. This week an agent working in my own everyday Chrome (not the automation one) hit a page that renders nothing at all while its window is minimized. It wanted the page, so it un-minimized the window. Focus gone, mid-sentence, again.</p>
+<p>I should say how much I care about this. Of everything an agent can do wrong on my machine, interrupting me ranks near the top, above being slow and above being wrong in a way I can fix later. You would think that after all this I'd be done with agents taking over my screen. This week an agent working in my own everyday Chrome (not the automation one) hit a page that renders nothing at all while its window is minimized. It wanted the page, so it un-minimized the window. Focus gone, mid-sentence, again.</p>
 <p>None of the machinery above was in play, because that browser isn't the automation browser. It is mine. The rule that would have stopped it is the one from section 5: when the only way forward is something visible, that's a handover to me, never a call the agent makes on its own. It's now written down as exactly that, and that step is waiting for me.</p>
 <h2>What I'd tell someone building this</h2>
 <ul>
@@ -125,7 +125,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <li>Give the agent a clean way to ask a human, and make it the only way past anything visible. A blocker it can file beats a CAPTCHA it tries to solve, and beats a window it decides to show you.</li>
 </ul>
 <hr />
-<p><em>Thanks for reading. Next up: why my agents got more reliable once I took some steps away from them and turned those into plain scripts. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you run agents on your own machine, I'd like to hear what they've done to your screen.</em></p></article>
+<p><em>Thanks for reading. Next up: why my agents got more reliable once I took some steps away from them and turned those into plain scripts. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you run agents on your own machine, I'd like to hear what they've done to your screen.</em></p>
+<p>— Denzil</p></article>
 <footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>
