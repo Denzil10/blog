@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>88% of my AI coding usage is the model rereading itself</title>
+<title>88% of my AI coding usage is context, not code</title>
 <meta name="description" content="Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.">
-<meta property="og:title" content="88% of my AI coding usage is the model rereading itself">
+<meta property="og:title" content="88% of my AI coding usage is context, not code">
 <meta property="og:description" content="Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.">
 <meta property="og:type" content="article">
 <link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
@@ -47,8 +47,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <body>
 <main>
 <nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
-<article><h1>88% of my AI coding usage is the model rereading itself</h1><p class="meta">2026-10-25</p><p class="lede">Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.</p><p>Every popular token-saving trick for coding agents goes after the same thing: what the model writes. Terser replies, compressed prose, shorter code, filtered shell output.</p>
-<p>So I measured what I was actually paying for. Over 35 days of my own coding-agent sessions, everything the model wrote, replies and code included, came to <strong>12%</strong> of usage. The other <strong>88%</strong> was the model rereading context it had already seen: the system prompt, tool definitions, file contents and the conversation so far, sent again on every request.</p>
+<article><h1>88% of my AI coding usage is context, not code</h1><p class="meta">2026-10-25</p><p class="lede">Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.</p><p>Every popular token-saving trick for coding agents goes after the same thing: what the model writes. Terser replies, compressed prose, shorter code, filtered shell output.</p>
+<p>So I measured what I was actually paying for. Over 35 days of my own coding-agent sessions, everything the model wrote, replies and code included, came to <strong>12%</strong> of usage. The other <strong>88%</strong> was context: the system prompt, tool definitions, file contents and the conversation so far. Most of it is re-sent on every request; the rest is new context being cached for the first time.</p>
 <p>Those tools were trimming the 12%.</p>
 <h2>Where it goes</h2>
 <p>Two weeks later I measured again, more finely: 7 days, 11.7k requests.</p>
@@ -69,12 +69,12 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <p><strong>Shell output filters.</strong> I counted ANSI codes, carriage-return progress bars and repeated lines in my agents' shell output: 0.72% of it. The harness already pages large file reads and stubs out unchanged re-reads. There was almost nothing to filter.</p>
 <p><strong>Third-party token savers.</strong> Independent tests of the popular tools put most of them within about ±7% on total cost, and some made it worse. Self-reported savings are usually measured against the slice the tool touches, not the whole bill.</p>
 <h2>What actually moved it</h2>
-<p>All context-side, each measured before and after:</p>
+<p>All context-side:</p>
 <table>
 <thead>
 <tr>
 <th>Change</th>
-<th>Measured effect</th>
+<th>Evidence</th>
 </tr>
 </thead>
 <tbody>
@@ -102,14 +102,9 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </table>
 <p>The first two compound. Every request re-sends the tool definitions, so 13.7k tokens saved per request across thousands of requests a week outweighs any amount of terser replies.</p>
 <h2>The hidden one: full rewrites</h2>
-<p>16% of my usage went to rewriting a session's <strong>entire</strong> context into the cache instead of reading it: a whole session's worth of the expensive token type, at once. The causes, from the logs:</p>
+<p>16% of my usage went to rewriting a session's <strong>entire</strong> context into the cache instead of reading it: a whole session's worth of the expensive token type, at once. The causes I could fix, from the logs:</p>
 <ul>
-<li>
-<p><strong>Switching accounts (7%)</strong>: the cache belongs to the account, so every open session rebuilds on its next turn.</p>
-</li>
-<li>
-<p><strong>Idle for more than an hour (5%)</strong>: the cache expires, so the next message rebuilds everything. Built-in idle compaction now runs at about 54 minutes, so the rebuild is a short summary.</p>
-</li>
+<li><strong>Idle for more than an hour (5%)</strong>: the cache expires, so the next message rebuilds everything. Built-in idle compaction now runs at about 54 minutes, so the rebuild is a short summary.</li>
 <li><strong>Right after compaction (2%)</strong>: unavoidable, but cheap once the summary is small.</li>
 <li><strong>First request of a session (1.5%)</strong>: this is what the skill and tool trimming shrank.</li>
 </ul>
