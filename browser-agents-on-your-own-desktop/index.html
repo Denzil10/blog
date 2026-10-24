@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Letting agents drive a real browser on the Mac I&#x27;m typing on</title>
+<meta name="description" content="Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.">
+<meta property="og:title" content="Letting agents drive a real browser on the Mac I&#x27;m typing on">
+<meta property="og:description" content="Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.">
+<meta property="og:type" content="article">
+<link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
+<style>
+:root {
+  --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1a1a19; --panel: #232322; --line: #383835; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #8e8d85; --accent: #6da7ec; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 40px 22px 80px; }
+nav { display: flex; gap: 18px; font-size: 14px; margin-bottom: 44px; }
+nav a { color: var(--ink-2); text-decoration: none; }
+nav a:first-child { color: var(--ink); font-weight: 600; margin-right: auto; }
+a { color: var(--accent); }
+h1 { font-size: clamp(28px, 4.6vw, 40px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 10px; }
+h2 { font-size: 22px; margin: 44px 0 8px; letter-spacing: -0.01em; }
+.meta { color: var(--ink-3); font: 13px ui-monospace, Menlo, monospace; }
+article .meta { margin: 0 0 16px; }
+.lede { color: var(--ink-2); font-size: 18px; margin: 0 0 30px; }
+code { font: .88em ui-monospace, Menlo, monospace; background: var(--panel); padding: 1px 4px; border-radius: 4px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 18px 0; display: block; overflow-x: auto; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; }
+blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--line); color: var(--ink-2); }
+.posts { list-style: none; padding: 0; margin: 0; }
+.posts li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+.posts a:hover { color: var(--accent); }
+.posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<article><h1>Letting agents drive a real browser on the Mac I&#x27;m typing on</h1><p class="meta">2026-10-24</p><p class="lede">Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.</p><p>My agents run all day: hourly fleet runs, scheduled jobs, a reviewer that asks a frontier model in a browser tab for a second opinion. Many of those steps need a real, logged-in browser, not an HTTP client. And the machine they run on is the laptop I'm working on.</p>
+<p>That gives the problem two sides. The agent needs a browser that behaves like a person's: real profile, real sessions, real user agent. I need it never to show up on my screen or take my keyboard mid-sentence. Here is what it took, in the order the failures showed up.</p>
+<h2>1. Headless got walled because of one word</h2>
+<p>Headless Chrome is the obvious way to stay off the screen. On chatgpt.com it hung forever on Cloudflare's "Just a moment..." page.</p>
+<p>It wasn't fingerprinting, mouse movement or anything exotic. Headless Chrome puts the token <code>HeadlessChrome</code> in its User-Agent header. With the same profile, headless, swapping in the exact UA headed Chrome sends (major version read from the installed binary, reduced to <code>major.0.0.0</code> the way Chrome reduces it) gave the logged-in composer instead of the challenge.</p>
+<p><strong>Lesson:</strong> before building a stealth stack, diff what your headless browser sends against what a normal one sends. The cheapest difference is often the one that matters.</p>
+<h2>2. Some sites still need a headed browser, and macOS fights you</h2>
+<p>A few flows refuse headless entirely. So I needed a headed Chrome that is never visible.</p>
+<p>The first idea, <code>--window-position=-10000,-10000</code>, failed. macOS clamps a window that sits on no display onto the nearest one. My external monitor is to the left of the laptop, so the "hidden" window landed in full view on it, and Chrome un-hid itself on every new page.</p>
+<p>What works:</p>
+<ul>
+<li>Start Chrome with no window at all (<code>open -j -g</code>, <code>--no-startup-window</code>).</li>
+<li>Create every page through CDP <code>Target.createTarget</code> with <code>windowState: "minimized"</code>, <code>background: true</code>, <code>focus: false</code>. Playwright's <code>context.new_page()</code> opens a normal window that can only be minimized after it has been shown, which is a visible flash.</li>
+<li>The page still reports <code>visibilityState: "visible"</code>, so sites that throttle background tabs load normally.</li>
+</ul>
+<h2>3. Hidden pixels are not hidden focus</h2>
+<p>A minimized window still takes keyboard activation when it's created, and an OAuth popup does exactly that. I would be typing into my terminal and the keystrokes would go to Chrome.</p>
+<p>The fix is a small focus guard: poll the frontmost process every 2 seconds and hide Chrome only when Chrome is frontmost. Both halves of that rule came from bugs:</p>
+<ul>
+<li>Hiding Chrome when it <em>wasn't</em> frontmost reshuffled the macOS activation stack and bounced me into an unrelated app.</li>
+<li>Re-activating "the app that was frontmost before" is wrong because that memory goes stale.</li>
+</ul>
+<p>I verified it by sampling the on-screen window list every 50 ms while ChatGPT loaded: zero on-screen windows, and Chrome never took the foreground.</p>
+<h2>4. Windows leaked for days</h2>
+<p>Sign-in windows piled up in the Dock for days. Two causes:</p>
+<ul>
+<li>When an agent <em>attaches</em> to a long-lived Chrome it doesn't own, <code>close()</code> tore down nothing.</li>
+<li>An OAuth popup is opened by the site via <code>window.open</code>, so it never passes through the caller's code.</li>
+</ul>
+<p>Now every page created while attached is tracked, identity-provider pages are closed on teardown, and the shared browser lock sweeps leftover auth popups when it's released. That last part catches jobs that were killed and never ran their own teardown.</p>
+<p>Two traps while writing that cleanup:</p>
+<ul>
+<li>For a page Playwright didn't create, <code>page.url</code> stays <code>''</code> forever, and <code>framenavigated</code> doesn't fire. Read <code>location.href</code> through <code>evaluate</code> instead.</li>
+<li>A Google sign-in popup on an already-signed-in profile doesn't stay on <code>accounts.google.com</code>. It lands on <code>myaccount.google.com</code>, so both hosts count as auth popups.</li>
+</ul>
+<p>A reaper (launchd, every 120 s) also closes any headless or hidden Chrome with no CDP client for 5 minutes.</p>
+<h2>5. Three modes, one rule for when a human is needed</h2>
+<p>The result is three modes behind one call:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Used for</th>
+<th>On screen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>headless</td>
+<td>everything that works headless</td>
+<td>never</td>
+</tr>
+<tr>
+<td>hidden</td>
+<td>sites that refuse headless</td>
+<td>no: minimized, focus-guarded</td>
+</tr>
+<tr>
+<td>handover</td>
+<td>a blocker only I can clear (login, 2FA, CAPTCHA)</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>There is one Chrome per profile. A hidden caller evicts a headless one; a handover window is protected for 30 minutes and is never reaped while I'm using it. An agent that hits a CAPTCHA doesn't guess or retry. It opens a handover window and files a blocker.</p>
+<h2>What I'd tell someone building this</h2>
+<ul>
+<li>Most "bot detection" failures I hit were one header or one window flag, found by diffing against a normal browser.</li>
+<li>Test invisibility by measuring the window list, not by looking. I only trusted it once a 50 ms sampler showed zero windows.</li>
+<li>Anything an agent opens, it must also close, including pages it didn't open itself.</li>
+<li>Give the agent a clean way to ask a human. A blocker it can file is better than a CAPTCHA it tries to solve.</li>
+</ul></article>
+<footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+</main>
+</body>
+</html>

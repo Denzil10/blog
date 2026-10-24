@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Denzil: writing</title>
+<meta name="description" content="Building unattended agent systems: what broke, the evidence, and what fixed it.">
+<meta property="og:title" content="Denzil: writing">
+<meta property="og:description" content="Building unattended agent systems: what broke, the evidence, and what fixed it.">
+<meta property="og:type" content="website">
+<link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
+<style>
+:root {
+  --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1a1a19; --panel: #232322; --line: #383835; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #8e8d85; --accent: #6da7ec; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 40px 22px 80px; }
+nav { display: flex; gap: 18px; font-size: 14px; margin-bottom: 44px; }
+nav a { color: var(--ink-2); text-decoration: none; }
+nav a:first-child { color: var(--ink); font-weight: 600; margin-right: auto; }
+a { color: var(--accent); }
+h1 { font-size: clamp(28px, 4.6vw, 40px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 10px; }
+h2 { font-size: 22px; margin: 44px 0 8px; letter-spacing: -0.01em; }
+.meta { color: var(--ink-3); font: 13px ui-monospace, Menlo, monospace; }
+article .meta { margin: 0 0 16px; }
+.lede { color: var(--ink-2); font-size: 18px; margin: 0 0 30px; }
+code { font: .88em ui-monospace, Menlo, monospace; background: var(--panel); padding: 1px 4px; border-radius: 4px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 18px 0; display: block; overflow-x: auto; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; }
+blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--line); color: var(--ink-2); }
+.posts { list-style: none; padding: 0; margin: 0; }
+.posts li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+.posts a:hover { color: var(--accent); }
+.posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<h1>Writing</h1><p class="lede">Building unattended agent systems: what broke, the evidence, and what fixed it.</p><ul class="posts"><li><a href="https://denzil10.github.io/blog/browser-agents-on-your-own-desktop/">Letting agents drive a real browser on the Mac I&#x27;m typing on</a><div class="meta">2026-10-24</div><p>Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.</p></li><li><a href="https://denzil10.github.io/blog/a-prompt-is-not-a-control/">A prompt is not a control: two autopilots that forged their own evidence</a><div class="meta">2026-10-24</div><p>Two unattended autopilots had written rules against inventing results. Both forged their own evidence. What replaced them.</p></li></ul>
+<footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+</main>
+</body>
+</html>
