@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Letting agents drive a real browser on the Mac I&#x27;m typing on</title>
-<meta name="description" content="Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.">
+<meta name="description" content="Headless Chrome walled over one User-Agent token, macOS dragging &#x27;off-screen&#x27; windows back into view, minimized popups that steal your keyboard, and sign-in windows that leaked for days.">
 <meta property="og:title" content="Letting agents drive a real browser on the Mac I&#x27;m typing on">
-<meta property="og:description" content="Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.">
+<meta property="og:description" content="Headless Chrome walled over one User-Agent token, macOS dragging &#x27;off-screen&#x27; windows back into view, minimized popups that steal your keyboard, and sign-in windows that leaked for days.">
 <meta property="og:type" content="article">
 <link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
 <style>
@@ -47,44 +47,46 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <body>
 <main>
 <nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
-<article><h1>Letting agents drive a real browser on the Mac I&#x27;m typing on</h1><p class="meta">2026-10-24</p><p class="lede">Headless Chrome walled over one User-Agent token, macOS clamping off-screen windows, minimized-but-focused popups, and sign-in windows that leaked for days.</p><p>My agents run all day: hourly fleet runs, scheduled jobs, a reviewer that asks a frontier model in a browser tab for a second opinion. Many of those steps need a real, logged-in browser, not an HTTP client. And the machine they run on is the laptop I'm working on.</p>
-<p>That gives the problem two sides. The agent needs a browser that behaves like a person's: real profile, real sessions, real user agent. I need it never to show up on my screen or take my keyboard mid-sentence. Here is what it took, in the order the failures showed up.</p>
-<h2>1. Headless got walled because of one word</h2>
-<p>Headless Chrome is the obvious way to stay off the screen. On chatgpt.com it hung forever on Cloudflare's "Just a moment..." page.</p>
-<p>It wasn't fingerprinting, mouse movement or anything exotic. Headless Chrome puts the token <code>HeadlessChrome</code> in its User-Agent header. With the same profile, headless, swapping in the exact UA headed Chrome sends (major version read from the installed binary, reduced to <code>major.0.0.0</code> the way Chrome reduces it) gave the logged-in composer instead of the challenge.</p>
-<p><strong>Lesson:</strong> before building a stealth stack, diff what your headless browser sends against what a normal one sends. The cheapest difference is often the one that matters.</p>
-<h2>2. Some sites still need a headed browser, and macOS fights you</h2>
-<p>A few flows refuse headless entirely. So I needed a headed Chrome that is never visible.</p>
-<p>The first idea, <code>--window-position=-10000,-10000</code>, failed. macOS clamps a window that sits on no display onto the nearest one. My external monitor is to the left of the laptop, so the "hidden" window landed in full view on it, and Chrome un-hid itself on every new page.</p>
+<article><h1>Letting agents drive a real browser on the Mac I&#x27;m typing on</h1><p class="meta">2026-10-24</p><p class="lede">Headless Chrome walled over one User-Agent token, macOS dragging &#x27;off-screen&#x27; windows back into view, minimized popups that steal your keyboard, and sign-in windows that leaked for days.</p><p>I was halfway through a sentence in my terminal when the rest of it went somewhere else. No window had appeared. Nothing on screen had changed. My keystrokes were simply going into a Chrome window I couldn't see, opened by one of my own agents.</p>
+<p>That is the strange position you end up in when your agents run on the laptop you're working on. Mine run all day: hourly fleet runs, scheduled jobs, and a reviewer that asks a frontier model for a second opinion in a browser tab. Plenty of those steps need a real, logged-in browser rather than an HTTP client, which means a real Chrome, with a real profile, on my real desktop.</p>
+<p>So the problem has two sides. The agent needs a browser that looks like a person's: real profile, real sessions, real user agent. I need it to never show up on my screen and never take my keyboard. Here is what that took, in the order things broke.</p>
+<h2>1. Headless got walled over one word</h2>
+<p>Headless Chrome is the obvious way to stay off the screen. On chatgpt.com it sat forever on Cloudflare's "Just a moment..." page.</p>
+<p>The usual advice at this point is a stealth stack: fingerprint patches, simulated mouse movement, everything people do to look human. None of it was needed. Headless Chrome puts the token <code>HeadlessChrome</code> in its User-Agent header. That's it. With the same profile, still headless, I sent the exact User-Agent that headed Chrome sends (major version read from the installed binary, reduced to <code>major.0.0.0</code> the way Chrome itself reduces it), and the challenge page turned into the logged-in composer.</p>
+<p>Before you build a stealth stack, diff what your headless browser sends against what a normal one sends. The difference that matters is often the dullest one.</p>
+<h2>2. macOS will not let you hide a window off-screen</h2>
+<p>A few flows refuse headless entirely, so I also needed a headed Chrome that is never visible.</p>
+<p>My first idea was the classic one: <code>--window-position=-10000,-10000</code>. Put the window somewhere no screen is. macOS doesn't allow that. A window that sits on no display gets clamped onto the nearest one, and my external monitor sits to the left of the laptop. The "hidden" window landed in full view, on the bigger screen, and Chrome un-hid itself on every new page for good measure.</p>
+<p><em>Hiding a window 10,000 pixels to the left, on a desk where the second monitor is on the left. In hindsight.</em></p>
 <p>What works:</p>
 <ul>
-<li>Start Chrome with no window at all (<code>open -j -g</code>, <code>--no-startup-window</code>).</li>
-<li>Create every page through CDP <code>Target.createTarget</code> with <code>windowState: "minimized"</code>, <code>background: true</code>, <code>focus: false</code>. Playwright's <code>context.new_page()</code> opens a normal window that can only be minimized after it has been shown, which is a visible flash.</li>
+<li>Start Chrome with no window at all (<code>open -j -g</code> and <code>--no-startup-window</code>).</li>
+<li>Create every page through the DevTools protocol, <code>Target.createTarget</code> with <code>windowState: "minimized"</code>, <code>background: true</code>, <code>focus: false</code>. Playwright's <code>context.new_page()</code> opens a normal window that can only be minimized after it has been shown, which is a visible flash every time.</li>
 <li>The page still reports <code>visibilityState: "visible"</code>, so sites that throttle background tabs load normally.</li>
 </ul>
 <h2>3. Hidden pixels are not hidden focus</h2>
-<p>A minimized window still takes keyboard activation when it's created, and an OAuth popup does exactly that. I would be typing into my terminal and the keystrokes would go to Chrome.</p>
-<p>The fix is a small focus guard: poll the frontmost process every 2 seconds and hide Chrome only when Chrome is frontmost. Both halves of that rule came from bugs:</p>
+<p>This was the sentence-eating bug from the top. A minimized window can still take keyboard activation when it's created, and an OAuth popup does exactly that. I would be typing into my terminal and the keystrokes went to Chrome.</p>
+<p>The fix is a small focus guard: check the frontmost process every 2 seconds, and hide Chrome only when Chrome is frontmost. Both halves of that rule came from bugs I shipped first:</p>
 <ul>
-<li>Hiding Chrome when it <em>wasn't</em> frontmost reshuffled the macOS activation stack and bounced me into an unrelated app.</li>
-<li>Re-activating "the app that was frontmost before" is wrong because that memory goes stale.</li>
+<li>Hiding Chrome when it wasn't frontmost reshuffled the macOS activation stack and bounced me into some unrelated app.</li>
+<li>Re-activating "whatever app was frontmost before" sounds right, but that memory goes stale fast.</li>
 </ul>
-<p>I verified it by sampling the on-screen window list every 50 ms while ChatGPT loaded: zero on-screen windows, and Chrome never took the foreground.</p>
-<h2>4. Windows leaked for days</h2>
-<p>Sign-in windows piled up in the Dock for days. Two causes:</p>
+<p>I didn't trust it until I measured it: sample the on-screen window list every 50 ms while ChatGPT loads. Zero on-screen windows, and Chrome never took the foreground.</p>
+<h2>4. Sign-in windows leaked for days</h2>
+<p>Sign-in windows piled up in the Dock for days before I noticed. There were two causes:</p>
 <ul>
-<li>When an agent <em>attaches</em> to a long-lived Chrome it doesn't own, <code>close()</code> tore down nothing.</li>
-<li>An OAuth popup is opened by the site via <code>window.open</code>, so it never passes through the caller's code.</li>
+<li>When an agent attaches to a long-lived Chrome it doesn't own, <code>close()</code> tore down nothing at all.</li>
+<li>An OAuth popup is opened by the site itself via <code>window.open</code>, so it never passes through the caller's code.</li>
 </ul>
-<p>Now every page created while attached is tracked, identity-provider pages are closed on teardown, and the shared browser lock sweeps leftover auth popups when it's released. That last part catches jobs that were killed and never ran their own teardown.</p>
-<p>Two traps while writing that cleanup:</p>
+<p>Now every page created while attached is tracked, identity-provider pages are closed on teardown, and the shared browser lock sweeps leftover auth popups when it's released. That last part catches jobs that were killed and never got to run their own teardown.</p>
+<p>Two traps while writing that cleanup, in case you're about to write one:</p>
 <ul>
-<li>For a page Playwright didn't create, <code>page.url</code> stays <code>''</code> forever, and <code>framenavigated</code> doesn't fire. Read <code>location.href</code> through <code>evaluate</code> instead.</li>
-<li>A Google sign-in popup on an already-signed-in profile doesn't stay on <code>accounts.google.com</code>. It lands on <code>myaccount.google.com</code>, so both hosts count as auth popups.</li>
+<li>For a page Playwright didn't create, <code>page.url</code> stays <code>''</code> forever, and <code>framenavigated</code> never fires. Read <code>location.href</code> through <code>evaluate</code> instead.</li>
+<li>A Google sign-in popup on an already-signed-in profile doesn't stay on <code>accounts.google.com</code>. It lands on <code>myaccount.google.com</code>, so both hosts have to count as auth popups.</li>
 </ul>
-<p>A reaper (launchd, every 120 s) also closes any headless or hidden Chrome with no CDP client for 5 minutes.</p>
-<h2>5. Three modes, one rule for when a human is needed</h2>
-<p>The result is three modes behind one call:</p>
+<p>A reaper (launchd, every 120 s) also closes any headless or hidden Chrome that has had no DevTools client for 5 minutes.</p>
+<h2>5. Three modes, and one honest way to ask for help</h2>
+<p>All of that ended up as three modes behind one call:</p>
 <table>
 <thead>
 <tr>
@@ -111,14 +113,19 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </tr>
 </tbody>
 </table>
-<p>There is one Chrome per profile. A hidden caller evicts a headless one; a handover window is protected for 30 minutes and is never reaped while I'm using it. An agent that hits a CAPTCHA doesn't guess or retry. It opens a handover window and files a blocker.</p>
+<p>There is one Chrome per profile. A hidden caller evicts a headless one; a handover window is protected for 30 minutes and is never reaped while I'm using it. An agent that hits a CAPTCHA doesn't guess or retry. It opens a handover window and files a blocker for me.</p>
+<h2>6. And then an agent did it anyway</h2>
+<p>You would think that after all this I'd be done with agents taking over my screen. This week an agent working in my own everyday Chrome (not the automation one) hit a page that renders nothing at all while its window is minimized. It wanted the page, so it un-minimized the window. Focus gone, mid-sentence, again.</p>
+<p>None of the machinery above was in play, because that browser isn't the automation browser. It is mine. The rule that would have stopped it is the one from section 5: when the only way forward is something visible, that's a handover to me, never a call the agent makes on its own. It's now written down as exactly that, and that step is waiting for me.</p>
 <h2>What I'd tell someone building this</h2>
 <ul>
 <li>Most "bot detection" failures I hit were one header or one window flag, found by diffing against a normal browser.</li>
-<li>Test invisibility by measuring the window list, not by looking. I only trusted it once a 50 ms sampler showed zero windows.</li>
-<li>Anything an agent opens, it must also close, including pages it didn't open itself.</li>
-<li>Give the agent a clean way to ask a human. A blocker it can file is better than a CAPTCHA it tries to solve.</li>
-</ul></article>
+<li>Test invisibility by measuring the window list. Looking at your screen and seeing nothing proves very little.</li>
+<li>Anything an agent opens, it also closes, including pages it didn't open itself.</li>
+<li>Give the agent a clean way to ask a human, and make it the only way past anything visible. A blocker it can file beats a CAPTCHA it tries to solve, and beats a window it decides to show you.</li>
+</ul>
+<hr />
+<p><em>Thanks for reading. Next up: why my agents got more reliable once I took some steps away from them and turned those into plain scripts. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you run agents on your own machine, I'd like to hear what they've done to your screen.</em></p></article>
 <footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>

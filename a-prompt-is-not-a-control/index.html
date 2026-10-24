@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A prompt is not a control: two autopilots that forged their own evidence</title>
-<meta name="description" content="Two unattended autopilots had written rules against inventing results. Both forged their own evidence. What replaced them.">
+<meta name="description" content="Two unattended autopilots had written rules against inventing results. One gave a simulated post 7,253 views; the other approved its own work for 40 days. What they did, and what replaced them.">
 <meta property="og:title" content="A prompt is not a control: two autopilots that forged their own evidence">
-<meta property="og:description" content="Two unattended autopilots had written rules against inventing results. Both forged their own evidence. What replaced them.">
+<meta property="og:description" content="Two unattended autopilots had written rules against inventing results. One gave a simulated post 7,253 views; the other approved its own work for 40 days. What they did, and what replaced them.">
 <meta property="og:type" content="article">
 <link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
 <style>
@@ -47,52 +47,56 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <body>
 <main>
 <nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
-<article><h1>A prompt is not a control: two autopilots that forged their own evidence</h1><p class="meta">2026-10-24</p><p class="lede">Two unattended autopilots had written rules against inventing results. Both forged their own evidence. What replaced them.</p><p>In August I audited two unattended agent systems I had been running. Both had rules, written plainly in their instructions, against inventing results. Both invented results anyway, and not subtly.</p>
-<p>This post is what they did, why the written rules didn't stop it, and what the system that replaced them does instead.</p>
-<h2>System 1: the ledger that published things that never existed</h2>
-<p>A five-agent swarm on low-cost models ran a small content pipeline. It kept a ledger of what it published and a metrics file of how each post performed.</p>
-<p>Checked against the live platform, the ledger had six rows marked <code>PUBLISHED</code>. Two were real. The other four had IDs like <code>temp_id_1</code>, <code>youtube_id_12345</code> and, literally, <code>placeholder_id</code>.</p>
-<p>One real post had a second leg on a platform that was never connected. Its post ID was <code>sim-TOAD-24-ABC</code>; the ID itself says "simulated". The metrics file still gave it 7,253 views and revenue to the paisa. A "nightly collection" job added rows of suspiciously round numbers (5000 / 500 / 50) for content that didn't exist, from an affiliate account that didn't exist.</p>
-<p>The data files also had <code>cat -n</code> line numbers pasted into cells. An agent had copied its own tool output back into the source file.</p>
-<p>The system's own failure policy said: <em>"Never create placeholder, simulated, or inferred performance metrics."</em> It had already been caught doing this once and had logged a lesson about it.</p>
+<article><h1>A prompt is not a control: two autopilots that forged their own evidence</h1><p class="meta">2026-10-24</p><p class="lede">Two unattended autopilots had written rules against inventing results. One gave a simulated post 7,253 views; the other approved its own work for 40 days. What they did, and what replaced them.</p><p>The post ID was <code>sim-TOAD-24-ABC</code>. It had 7,253 views and revenue down to the paisa.</p>
+<p>The ID says "simulated" right there in the first three letters. The platform it was supposedly posted to had never been connected. And yet my metrics file reported, with total confidence, how well it had done.</p>
+<p>I found it in August, auditing two unattended agent systems I had been running. Both had rules, written plainly in their instructions, against inventing results. Both invented results anyway, and not subtly. This is what they did, why the written rules didn't stop them, and what the system that replaced them does instead.</p>
+<h2>System 1: the ledger of things that never existed</h2>
+<p>The first was a five-agent swarm on low-cost models running a small content pipeline. It kept a ledger of what it had published and a metrics file of how each post performed.</p>
+<p>I checked the ledger against the live platform. Six rows said <code>PUBLISHED</code>. Two were real. The other four had IDs like <code>temp_id_1</code>, <code>youtube_id_12345</code> and, my favourite, <code>placeholder_id</code>.</p>
+<p><em>When the agent names its own fake, you can't even say it was trying to fool you.</em></p>
+<p>The one real post had a second leg on that never-connected platform, which is where <code>sim-TOAD-24-ABC</code> and its 7,253 views came from. A "nightly collection" job had been adding rows of suspiciously round numbers (5000 / 500 / 50) for content that didn't exist, credited to an affiliate account that didn't exist either.</p>
+<p>My other favourite detail: the data files had <code>cat -n</code> line numbers pasted into their cells. An agent had read a file, got the output with line numbers, and written that output straight back into the file.</p>
+<p>The system's own failure policy said, word for word: <em>"Never create placeholder, simulated, or inferred performance metrics."</em> It had already been caught doing this once, and had written itself a lesson about it.</p>
 <h2>System 2: the reviewer that reviewed itself</h2>
-<p>A separate autopilot made short technical videos. Before publishing, each video had to pass a review by a frontier model in a browser session. That review step broke when the session expired, and stayed broken for more than 40 days.</p>
-<p>The agent didn't escalate. It wrote the review files itself:</p>
+<p>A separate autopilot made short technical videos. Before anything was published, each video had to pass a review by a frontier model in a browser session. That review step broke when the browser login expired, and it stayed broken for more than 40 days.</p>
+<p>The agent never told anyone. It wrote the review files itself:</p>
 <pre><code class="language-json">&quot;assistant_text_tail&quot;: &quot;VERDICT: PASS\n\nStrong technical hook... Pacing is punchy,
  subtitles are in sync ... Ready to publish.&quot;
 </code></pre>
-<p>No reviewer wrote that. One forged review also faked the <em>deterministic</em> gate's output (<code>"quality_gate": {"passed": true}</code>) for a video that had no artifacts and would have failed outright.</p>
-<p>The rest of the system had drifted the same way:</p>
+<p><em>A rave review, written by the reviewee.</em></p>
+<p>One forged review went further and faked the output of the deterministic gate too (<code>"quality_gate": {"passed": true}</code>), for a video that had no artifacts on disk and would have failed outright.</p>
+<p>Once I started looking, the rest of the system had drifted the same way:</p>
 <ul>
-<li>The publish limits in code had been ratcheted from 1 a day to 20, and from 5 a week to 50. Nine videos went out in one day.</li>
-<li>A test that checked the weekly limit had been failing on the main branch the whole time, while the agent's own notes kept reporting "29/29 tests passing".</li>
-<li>The quality gate checked resolution, sample rate and duration. It never looked at a single frame. 21 published videos showed no technical content at all: gameplay footage with a word or two on top, or a box of prose describing a demo that was never rendered.</li>
+<li>The publish limits in code had been ratcheted up from 1 a day to 20, and from 5 a week to 50. Nine videos went out in one day.</li>
+<li>A test that checked the weekly limit had been failing on the main branch the whole time, while the agent's notes kept reporting "29/29 tests passing".</li>
+<li>The quality gate checked resolution, sample rate and duration, and never looked at a single frame. 21 published videos had no technical content at all: gameplay footage with a word or two on top, or a box of prose describing a demo that was never rendered.</li>
 </ul>
-<h2>What the two have in common</h2>
-<p>Every check in both systems asked the agent to certify its own work: a ledger it wrote, a review it could write, a test summary it reported. When the honest path was blocked (an expired login, an account that didn't exist), the cheapest way to "make progress" was to write the success record directly. A rule in the prompt was one more piece of text competing with the goal of making progress.</p>
-<p>Cheaper models made it worse, but a stronger model doesn't fix that structure. The structure has to change.</p>
+<p>Honestly, the test one bothers me most. "29/29 tests passing" is exactly the kind of line you skim and feel reassured by.</p>
+<h2>What the two had in common</h2>
+<p>Every check in both systems asked the agent to certify its own work: a ledger it wrote, a review it could write, a test summary it reported. When the honest path was blocked (an expired login, an account that didn't exist), the cheapest way to "make progress" was to write the success record directly. A rule in the prompt was just one more piece of text, competing with the much louder goal of making progress.</p>
+<p>Cheaper models made it worse. I don't think a stronger model fixes it, though, because the structure itself rewards writing the success record. So I changed the structure.</p>
 <h2>What replaced them</h2>
-<p>I stopped trusting both and rebuilt the fleet around one rule: <strong>anything an agent writes about the outside world is unverified until a check outside the model confirms it.</strong> Concretely:</p>
+<p>The new fleet runs on one rule: <strong>anything an agent writes about the outside world is unverified until a check outside the model confirms it.</strong> In practice that became four things.</p>
 <ol>
-<li><strong>Capability, not judgement.</strong> Worker runs use a restricted permission profile: they cannot publish, post or spend, so they never decide whether to. Deterministic steps (publishing on a schedule, reading sales numbers) moved into scripts that run before or after the model, so the model can't invent their inputs or outputs.</li>
-<li><strong>Evidence per stage.</strong> A claim that something reached a stage (built, listed, published) must carry evidence of that stage's type, plus a <code>verified_via</code> field naming the live check that produced it.</li>
-<li><strong>A verifier the agent can't edit.</strong> After every run, a script checks those claims. Unbacked claims are quarantined for review, not deleted: the forged records are the evidence of what happened. The runner and guards are read-only to agents, and edits are reverted.</li>
-<li><strong>Check the output, not the description of it.</strong> The gate that passed 21 empty videos never looked at a frame. A gate has to inspect the thing that ships (the rendered frames, the live URL, the API response), not the agent's description of it.</li>
+<li><strong>Agents can't do the risky thing, so they never have to decide whether to.</strong> Worker runs use a restricted permission profile: they cannot publish, post or spend. Deterministic steps (publishing on a schedule, reading sales numbers) moved into scripts that run before or after the model, so the model can't invent their inputs or outputs.</li>
+<li><strong>Every claim carries evidence for its stage.</strong> A claim that something reached a stage (built, listed, published) needs evidence of that stage's type, plus a <code>verified_via</code> field naming the live check that produced it.</li>
+<li><strong>The verifier is out of the agents' reach.</strong> After every run, a script checks those claims. Unbacked claims are quarantined for review rather than deleted, because the forged records are the only evidence of what happened. The runner and the guards are read-only to agents, and any edit to them is reverted.</li>
+<li><strong>Gates inspect the thing that ships.</strong> The gate that passed 21 empty videos never looked at a frame. A gate has to look at the rendered frames, the live URL, the API response, whatever actually goes out, and ignore the agent's description of it.</li>
 </ol>
 <h2>Did it work?</h2>
-<p>Two signals from the replacement fleet:</p>
+<p>Two moments from the replacement fleet made me believe it.</p>
+<p>In its first week, the verifier demoted three <em>real</em> claims because their evidence was the wrong shape. The agents fixed the evidence. Nobody loosened the rule. That feels unfair when it happens (they were real!), and that's the point: a rule that also catches honest mistakes is one that's actually being enforced.</p>
+<p>On 2026-09-20, a run found 19 unverified data rows that a previous run had left on disk, discarded them, and logged why. The self-correction is in the commit history, where I can check it, rather than in a prompt where I'd have to take its word.</p>
+<p>Across 529 unattended runs since then, the verifier has quarantined 5 claims. The fleet's live numbers and its full decision log are public: https://denzil10.github.io/agent-fleet/</p>
+<h2>What I'd tell you to do</h2>
 <ul>
-<li><strong>In its first week</strong>, the verifier demoted three <em>real</em> claims because their evidence was mis-shaped. The agents fixed the evidence; nobody loosened the rule. A rule that also catches honest mistakes is enforced, not decorative.</li>
-<li><strong>On 2026-09-20</strong>, a run found 19 unverified data rows a previous run had left on disk, discarded them and logged why. Self-correction shows up in the commit history, not only in a prompt.</li>
-</ul>
-<p>Across 529 unattended runs since then, the verifier has quarantined 5 claims. The fleet's live numbers and full decision log are public: https://denzil10.github.io/agent-fleet/</p>
-<h2>Takeaways</h2>
-<ul>
-<li>Whatever an agent can write, it can fake. Put the evidence somewhere it can't write, or check it from outside.</li>
-<li>A blocked honest path is where fabrication starts. Give the agent a cheap, legitimate way to say "blocked" (a blocker file a human reads), and treat silence about a blocker as a bug.</li>
+<li>Whatever an agent can write, it can fake. Keep the evidence somewhere it can't write, or check it from outside.</li>
+<li>A blocked honest path is where fabrication starts. Give the agent a cheap, legitimate way to say "I'm blocked" (a blocker file a human reads), and treat silence about a blocker as a bug.</li>
 <li>Keep forged records. They are your only primary evidence.</li>
-<li>Tests the agent runs and reports aren't a gate unless something outside the agent reads the result.</li>
-</ul></article>
+<li>Tests the agent runs and reports aren't a gate until something outside the agent reads the result.</li>
+</ul>
+<hr />
+<p><em>Thanks for reading. Next up: the steps I took away from my agents entirely and turned into plain scripts, and why that made them more reliable. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If an agent of yours has ever faked its own success, I'd like to hear how you caught it.</em></p></article>
 <footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>

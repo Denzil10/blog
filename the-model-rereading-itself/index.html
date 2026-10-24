@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>88% of my AI coding usage is context, not code</title>
-<meta name="description" content="Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.">
-<meta property="og:title" content="88% of my AI coding usage is context, not code">
-<meta property="og:description" content="Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.">
+<title>88% of my coding agent&#x27;s usage goes on reading</title>
+<meta name="description" content="Token-saving tools shrink what the model writes. I measured 35 days of my own sessions: what it writes is 12%. Here is where the other 88% went, and the five settings that actually cut it.">
+<meta property="og:title" content="88% of my coding agent&#x27;s usage goes on reading">
+<meta property="og:description" content="Token-saving tools shrink what the model writes. I measured 35 days of my own sessions: what it writes is 12%. Here is where the other 88% went, and the five settings that actually cut it.">
 <meta property="og:type" content="article">
 <link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
 <style>
@@ -47,71 +47,71 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <body>
 <main>
 <nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
-<article><h1>88% of my AI coding usage is context, not code</h1><p class="meta">2026-10-25</p><p class="lede">Token-saving tools shrink what the model writes. I measured where my usage goes: what it writes is 12%. The other 88% is context, and that&#x27;s where the real savings were.</p><p>Every popular token-saving trick for coding agents goes after the same thing: what the model writes. Terser replies, compressed prose, shorter code, filtered shell output.</p>
-<p>So I measured what I was actually paying for. Over 35 days of my own coding-agent sessions, everything the model wrote, replies and code included, came to <strong>12%</strong> of usage. The other <strong>88%</strong> was context: the system prompt, tool definitions, file contents and the conversation so far. Most of it is re-sent on every request; the rest is new context being cached for the first time.</p>
-<p>Those tools were trimming the 12%.</p>
-<h2>Where it goes</h2>
-<p>Two weeks later I measured again, more finely: 7 days, 11.7k requests.</p>
+<article><h1>88% of my coding agent&#x27;s usage goes on reading</h1><p class="meta">2026-10-25</p><p class="lede">Token-saving tools shrink what the model writes. I measured 35 days of my own sessions: what it writes is 12%. Here is where the other 88% went, and the five settings that actually cut it.</p><p>There is a whole genre of tools for making coding agents cheaper, and almost all of them go after the same thing: the words the model writes. Make it answer in fewer sentences. Make it talk like a caveman (there is a skill for that, and it is called <code>caveman</code>). Compress the code it prints. Filter the noise out of shell output before the model sees it.</p>
+<p>I run Claude Code most of the day, with agents working in the background while I do other things, so I care about this a lot. Before trying any of it, I wanted to know one boring thing: what am I actually paying for?</p>
+<p>So I went through 35 days of my own session transcripts and the client's usage stats and split everything into two piles: what the model wrote, and what it read.</p>
+<p>What it wrote, every reply and every line of code, came to <strong>12%</strong>.</p>
+<p>The other <strong>88%</strong> was reading. The system prompt, the tool definitions, the files it opened, and the whole conversation so far, sent back to the model on every single request. Most of that is a re-send of context it has already seen. The rest is new context going into the cache for the first time.</p>
+<p>Every tool in that genre was fighting over the 12%.</p>
+<h2>Why reading is the expensive part</h2>
+<p>A chat with a model is stateless. Each time the agent takes a step (read a file, run a command, think, reply), the client sends the model everything again: instructions, tools, the history, the tool results. Prompt caching makes the repeated part much cheaper per token, but "much cheaper" times "every step" times "hundreds of steps a session" is still the biggest number on the page.</p>
+<p>Two weeks after the first measurement I ran a finer one, 7 days and 11.7k requests, split by the three token types that actually get billed differently:</p>
 <div style="display:flex;height:34px;border-radius:6px;overflow:hidden;gap:2px;margin:22px 0 8px;font:600 13px/34px ui-sans-serif,-apple-system,sans-serif;color:#fff">
 <div style="flex:50;background:#2a78d6;padding-left:10px">Cache read 50%</div>
 <div style="flex:35;background:#c4501f;padding-left:10px">Cache write 35%</div>
 <div style="flex:16;background:#52514e;padding-left:8px">Output 16%</div>
 </div>
 
-<p><em>Share of usage, 7 days, 11.7k requests.</em></p>
-<ul>
-<li><strong>Cache read (50%)</strong>: the context reused from the cache on each request. It's cheap per token, but every turn pays it again.</li>
-<li><strong>Cache write (35%)</strong>: context written to the cache. Per token, this is the expensive one.</li>
-<li><strong>Output (16%)</strong>: everything the model generated.</li>
-</ul>
-<p>A typical session peaked at 95k tokens of context, and one in ten passed 266k. Every turn near that peak rereads all of it.</p>
-<h2>The usual suspects, measured</h2>
-<p><strong>Shell output filters.</strong> I counted ANSI codes, carriage-return progress bars and repeated lines in my agents' shell output: 0.72% of it. The harness already pages large file reads and stubs out unchanged re-reads. There was almost nothing to filter.</p>
-<p><strong>Third-party token savers.</strong> Independent tests of the popular tools put most of them within about ±7% on total cost, and some made it worse. Self-reported savings are usually measured against the slice the tool touches, not the whole bill.</p>
+<p><em>Share of usage, 7 days, 11.7k requests. The grey sliver on the right is the part everyone optimises.</em></p>
+<p>Cache reads are the context being re-sent and served from cache: cheap per token, paid on every turn. Cache writes are context going into the cache: the most expensive token type there is, per token. Output is everything the model generated.</p>
+<p>(Output came out at 16% here and 12% over the 35 days. Different window, different mix of work. Either way it is the small slice.)</p>
+<p>The context also gets big. My median session peaked at 95k tokens, and one session in ten went past 266k. Near the peak, every step rereads all of it, including detours from an hour ago that have nothing to do with what the agent is doing now.</p>
+<h2>First, the suspects I could clear</h2>
+<p><strong>Shell output.</strong> This is what most filtering tools target: ANSI colour codes, progress bars redrawn with carriage returns, the same line repeated over and over by a noisy build. I counted all of it across my agents' shell output. It was <strong>0.72%</strong> of that output. Shell results were only 4.7% of all tool-result text in the first place. The client already pages large file reads (at 25k tokens), refuses giant ones, and swaps unchanged re-reads for a short stub. There was almost nothing left for a filter to take.</p>
+<p>The bigger tool-result cost was file reads: results longer than 10k characters made up 20.5% of all tool-result text. That is a habit problem (read the function, not the whole file), and no output filter touches it.</p>
+<p><strong>Third-party token savers.</strong> I didn't test these myself; independent comparisons already have (for example <a href="https://cc.bruniaux.com/token-savings">this one</a>). Most popular tools landed within about ±7% on total cost. A couple made it worse: one shell-output rewriter came out around +7%, and one context-management tool around +52%. If a tool says it saves 60%, that is usually 60% of the slice it touches. Of a 12% slice, that is about 7% of the bill, before you count the tokens its own instructions add to every request.</p>
+<p>I'll admit this part was a little deflating. I wanted a clever fix. The real fixes were all settings.</p>
 <h2>What actually moved it</h2>
-<p>All context-side:</p>
-<table>
-<thead>
-<tr>
-<th>Change</th>
-<th>Evidence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Defer tool schemas a session doesn't use</td>
-<td>−13.7k tokens on <strong>every</strong> request</td>
-</tr>
-<tr>
-<td>List 51 unused skills by name only, drop 3 unused tools</td>
-<td>first request 25.0k → 18.7k tokens</td>
-</tr>
-<tr>
-<td>Compact earlier (window 300k → 200k, later 150k)</td>
-<td>≈ −18% context tokens for the first step (simulated on my transcripts)</td>
-</tr>
-<tr>
-<td>Compact idle sessions before the 1h cache expires</td>
-<td>avoids a full rewrite when you come back</td>
-</tr>
-<tr>
-<td>Run general-purpose subagents on a cheaper model</td>
-<td>they were 15% of a day's usage on the top model</td>
-</tr>
-</tbody>
-</table>
-<p>The first two compound. Every request re-sends the tool definitions, so 13.7k tokens saved per request across thousands of requests a week outweighs any amount of terser replies.</p>
+<p>All five are about context. None of them make the model say less.</p>
+<h3>1. Stop sending tools nobody calls</h3>
+<p>Every request carries the full definition of every tool the agent might use: name, description, JSON schema. Some of those schemas are long, and I never use the tools in personal projects. Claude Code lets a plugin mark a tool as deferred, so only its name is sent and the schema loads if the model actually asks for it. I wrote a small one for the handful of tools I don't use.</p>
+<p>Result: <strong>13.7k tokens off every request</strong>. Not every session. Every request. Over a week of 11.7k requests, that one change is worth more than any amount of terser replies.</p>
+<h3>2. List unused skills by name only</h3>
+<p>Skills are the same problem in a different coat. Each installed skill puts its name and description in the system prompt so the model knows it exists. I had 51 skills I hadn't used in 30 days. One setting keeps them installed and loadable but drops the description:</p>
+<pre><code class="language-json">&quot;skillOverrides&quot;: {
+  &quot;anthropic-skills:canvas-design&quot;: &quot;name-only&quot;,
+  &quot;anthropic-skills:chrome-browser&quot;: &quot;name-only&quot;,
+  ...51 of these
+}
+</code></pre>
+<p><em>The least exciting JSON I have ever been happy about.</em></p>
+<p>Together with denying three tools I never used, the first request of a session in an empty directory went from <strong>25.0k to 18.7k tokens</strong>, measured with <code>claude -p</code> before and after.</p>
+<h3>3. Compact earlier</h3>
+<p>Compaction summarises the conversation and starts a fresh context from the summary. By default it waits until the context is huge. I lowered the window from 300k to 200k (and later 150k). On my own transcripts, a simulation of the first step said about <strong>18% fewer context tokens</strong>, at the cost of roughly 3.4 extra compactions a day. A summary loses detail, so this is a trade, and I'm still not sure 150k is the right number for long debugging sessions. For the way I work, it has been fine.</p>
+<h3>4. Compact before the cache expires</h3>
+<p>This one surprised me, and it gets its own section below.</p>
+<h3>5. Put the helpers on a cheaper model</h3>
+<p>General-purpose subagents (the ones an agent spawns to go search or summarise) were <strong>15% of a day's usage</strong>, all running on the top model. One environment variable, <code>CLAUDE_CODE_SUBAGENT_MODEL=sonnet</code>, moves them to a cheaper one. Forks, which copy the parent's whole context, still inherit the parent's model, which is what you want.</p>
 <h2>The hidden one: full rewrites</h2>
-<p>16% of my usage went to rewriting a session's <strong>entire</strong> context into the cache instead of reading it: a whole session's worth of the expensive token type, at once. The causes I could fix, from the logs:</p>
+<p>Here is the part I didn't see coming.</p>
+<p>The cache has a lifetime. If a session sits idle for more than an hour, the cache entry expires, and the next message has to write the entire context back into the cache. That is a whole session's worth of the most expensive token type, all at once, for typing "ok, continue".</p>
+<p>When I counted, <strong>16% of my usage</strong> was these full rewrites. The causes I could do something about:</p>
 <ul>
-<li><strong>Idle for more than an hour (5%)</strong>: the cache expires, so the next message rebuilds everything. Built-in idle compaction now runs at about 54 minutes, so the rebuild is a short summary.</li>
-<li><strong>Right after compaction (2%)</strong>: unavoidable, but cheap once the summary is small.</li>
-<li><strong>First request of a session (1.5%)</strong>: this is what the skill and tool trimming shrank.</li>
+<li>Idle for more than an hour: 5%. I leave sessions open in terminal tabs all day and come back to them.</li>
+<li>The first request of a session: 1.5%. This is what the skill and tool trimming shrank.</li>
+<li>Right after a compaction: 2%. Unavoidable, but cheap once the summary is small.</li>
 </ul>
-<p>None of this shows up if you only look at how long the replies are.</p>
-<h2>The takeaway</h2>
-<p>Before you install a token saver, split your usage into read, write and output. If output is a small slice, and for agent work it almost always is, shorter answers can't save much. The savings are in what gets re-sent every turn: tool definitions, skills, stale context, and the full rewrites when a cache expires.</p>
-<p>Measure first. Then cut the 88%.</p></article>
+<p>The fix for the idle case already existed: Claude Code can compact an idle session at about 54 minutes, before the cache expires, so coming back rewrites a short summary instead of 150k tokens.</p>
+<p>Then I read how it decides. The default only compacts sessions bigger than 200k tokens. I had just set my compaction window to 150k, so no session ever got that big, so idle compaction could never fire. Two good settings, silently cancelling each other out. Setting <code>CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS=100000</code> (the lowest it accepts) fixed it.</p>
+<p>I only caught that because I was looking at full rewrites as their own number. If you only look at how long the replies are, none of this exists.</p>
+<h2>A side effect: it changed how I build tools</h2>
+<p>Once you see the bill this way, you start noticing context re-sends everywhere. I have a small prompt-tidying helper that rewrites my rough prompts before they're sent. Its first version forked the current session to do it, which meant re-reading the entire conversation for every tidy. The rewrite sends only my last prompt and the last reply to a cheaper model, a tiny fraction of the reading.</p>
+<h2>What I'd tell you to do</h2>
+<p>Before you install a token saver, split your usage three ways: cache reads, cache writes, output. If output is a small slice (for agent work it almost always is), shorter answers can't save you much, and the tool's own instructions might cost more than it saves.</p>
+<p>Then go after what gets sent on every turn: tool schemas you never call, skill descriptions you never read, stale context that should have been compacted, and the full rewrites when a cache expires. Check that your settings don't cancel each other out.</p>
+<p>Measure first. Then cut the 88%.</p>
+<hr />
+<p><em>That's it for this one. Next up: the steps I pulled out of the model loop entirely and turned into plain scripts, and why my agents got more reliable when they were allowed to do less. Follow along on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you've measured your own split and got a very different number, I'd like to hear how your work differs.</em></p></article>
 <footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>
