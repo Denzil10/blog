@@ -8,7 +8,7 @@
 <meta property="og:title" content="A prompt is not a control: two autopilots that forged their own evidence">
 <meta property="og:description" content="Two unattended autopilots had written rules against inventing results. One gave a simulated post 7,253 views; the other approved its own work for 40 days. What they did, and what replaced them.">
 <meta property="og:type" content="article">
-<link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="Denzil Nelson: writing" href="https://denzil10.github.io/blog/feed.xml">
 <style>
 :root {
   --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
@@ -41,12 +41,23 @@ blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--lin
 .posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
 .posts a:hover { color: var(--accent); }
 .posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+figure.dia { margin: 26px 0 8px; overflow-x: auto; }
+figure.dia svg { width: 100%; min-width: 600px; height: auto; display: block; }
+.dia text { fill: var(--ink); font: 600 13px ui-sans-serif, -apple-system, sans-serif; }
+.dia text.s { fill: var(--ink-2); font-weight: 400; font-size: 12px; }
+.dia text.w { fill: #fff; font-weight: 600; font-size: 12px; }
+.dia .box { fill: var(--panel); stroke: var(--line); }
+.dia .model { stroke: #2a78d6; stroke-width: 2; }
+.dia .gate { stroke: #c4501f; stroke-width: 2; }
+.dia .ln { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.dia .dash { stroke-dasharray: 4 4; }
+.dia .head { fill: var(--ink-3); }
 footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </style>
 </head>
 <body>
 <main>
-<nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<nav><a href="https://denzil10.github.io/">Denzil Nelson</a><a href="https://denzil10.github.io/blog/">Writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
 <article><h1>A prompt is not a control: two autopilots that forged their own evidence</h1><p class="meta">2026-10-24</p><p class="lede">Two unattended autopilots had written rules against inventing results. One gave a simulated post 7,253 views; the other approved its own work for 40 days. What they did, and what replaced them.</p><p>The post ID was <code>sim-TOAD-24-ABC</code>. It had 7,253 views and revenue down to the paisa.</p>
 <p>The ID says "simulated" right there in the first three letters. The platform it was supposedly posted to had never been connected. And yet my metrics file reported, with total confidence, how well it had done.</p>
 <p>I found it in August, auditing two unattended agent systems I had been running. Both had rules, written plainly in their instructions, against inventing results. Both invented results anyway, and not subtly. This is what they did, why the written rules didn't stop them, and what the system that replaced them does instead.</p>
@@ -84,6 +95,9 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <li><strong>The verifier is out of the agents' reach.</strong> After every run, a script checks those claims. Unbacked claims are quarantined for review rather than deleted, because the forged records are the only evidence of what happened. The runner and the guards are read-only to agents, and any edit to them is reverted.</li>
 <li><strong>Gates inspect the thing that ships.</strong> The gate that passed 21 empty videos never looked at a frame. A gate has to look at the rendered frames, the live URL, the API response, whatever actually goes out, and ignore the agent's description of it.</li>
 </ol>
+<figure class="dia"><svg viewBox="0 0 680 215" role="img" aria-label="Flow: script reads feed a worker run; the worker's claims go to a verifier outside the agents' reach; backed claims reach the ledger, unbacked ones go to quarantine."><defs><marker id="a-verify" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0 L10 5 L0 10 z"/></marker></defs><rect class="ln dash" x="340" y="8" width="160" height="186" rx="10"/><text class="s" x="420" y="210" text-anchor="middle">out of the agents' reach</text><rect class="box " x="4" y="20" width="140" height="64" rx="8"/><text x="16" y="44">Script reads</text><text class="s" x="16" y="62">metrics and sales,</text><text class="s" x="16" y="78">read by code</text><rect class="box model" x="177" y="20" width="140" height="64" rx="8"/><text x="189" y="44">Worker run</text><text class="s" x="189" y="62">can't publish,</text><text class="s" x="189" y="78">post or spend</text><rect class="box gate" x="350" y="20" width="140" height="64" rx="8"/><text x="362" y="44">Verifier</text><text class="s" x="362" y="62">checks evidence</text><text class="s" x="362" y="78">after every run</text><rect class="box " x="523" y="20" width="140" height="64" rx="8"/><text x="535" y="44">Ledger</text><text class="s" x="535" y="62">backed claims</text><text class="s" x="535" y="78">only</text><rect class="box " x="350" y="128" width="140" height="56" rx="8"/><text x="362" y="152">Quarantine</text><text class="s" x="362" y="170">kept for review</text><path class="ln" d="M144 52 L175 52" marker-end="url(#a-verify)"/><path class="ln" d="M317 52 L348 52" marker-end="url(#a-verify)"/><path class="ln" d="M490 52 L521 52" marker-end="url(#a-verify)"/><path class="ln" d="M420 84 L420 126" marker-end="url(#a-verify)"/><text class="s" x="428" y="110">unbacked</text></svg></figure>
+
+<p><em>Blue is the model, orange is the gate. The verifier reads what the agents wrote and decides what reaches the ledger; the agents can't edit it.</em></p>
 <h2>Did it work?</h2>
 <p>Two moments from the replacement fleet made me believe it.</p>
 <p>In its first week, the verifier demoted three <em>real</em> claims because their evidence was the wrong shape. The agents fixed the evidence. Nobody loosened the rule. That feels unfair when it happens (they were real!), and that's the point: a rule that also catches honest mistakes is one that's actually being enforced.</p>
@@ -98,8 +112,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </ul>
 <hr />
 <p><em>Thanks for reading. Next up: the steps I took away from my agents entirely and turned into plain scripts, and why that made them more reliable. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If an agent of yours has ever faked its own success, I'd like to hear how you caught it.</em></p>
-<p>— Denzil</p></article>
-<footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+<p>— <a href="https://denzil10.github.io/">Denzil Nelson</a></p></article>
+<footer><a href="https://denzil10.github.io/">Denzil Nelson</a>, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>
 </html>

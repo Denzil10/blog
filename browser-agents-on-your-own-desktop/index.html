@@ -8,7 +8,7 @@
 <meta property="og:title" content="Letting agents drive a real browser on the Mac I&#x27;m typing on">
 <meta property="og:description" content="Headless Chrome walled over one User-Agent token, macOS dragging &#x27;off-screen&#x27; windows back into view, minimized popups that steal your keyboard, and sign-in windows that leaked for days.">
 <meta property="og:type" content="article">
-<link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="Denzil Nelson: writing" href="https://denzil10.github.io/blog/feed.xml">
 <style>
 :root {
   --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
@@ -41,12 +41,23 @@ blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--lin
 .posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
 .posts a:hover { color: var(--accent); }
 .posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+figure.dia { margin: 26px 0 8px; overflow-x: auto; }
+figure.dia svg { width: 100%; min-width: 600px; height: auto; display: block; }
+.dia text { fill: var(--ink); font: 600 13px ui-sans-serif, -apple-system, sans-serif; }
+.dia text.s { fill: var(--ink-2); font-weight: 400; font-size: 12px; }
+.dia text.w { fill: #fff; font-weight: 600; font-size: 12px; }
+.dia .box { fill: var(--panel); stroke: var(--line); }
+.dia .model { stroke: #2a78d6; stroke-width: 2; }
+.dia .gate { stroke: #c4501f; stroke-width: 2; }
+.dia .ln { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.dia .dash { stroke-dasharray: 4 4; }
+.dia .head { fill: var(--ink-3); }
 footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </style>
 </head>
 <body>
 <main>
-<nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<nav><a href="https://denzil10.github.io/">Denzil Nelson</a><a href="https://denzil10.github.io/blog/">Writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
 <article><h1>Letting agents drive a real browser on the Mac I&#x27;m typing on</h1><p class="meta">2026-10-24</p><p class="lede">Headless Chrome walled over one User-Agent token, macOS dragging &#x27;off-screen&#x27; windows back into view, minimized popups that steal your keyboard, and sign-in windows that leaked for days.</p><p>I was halfway through a sentence in my terminal when the rest of it went somewhere else. No window had appeared. Nothing on screen had changed. My keystrokes were simply going into a Chrome window I couldn't see, opened by one of my own agents.</p>
 <p>That is the strange position you end up in when your agents run on the laptop you're working on. Mine run all day: hourly fleet runs, scheduled jobs, and a reviewer that asks a frontier model for a second opinion in a browser tab. Plenty of those steps need a real, logged-in browser rather than an HTTP client, which means a real Chrome, with a real profile, on my real desktop.</p>
 <p>So the problem has two sides. The agent needs a browser that looks like a person's: real profile, real sessions, real user agent. I need it to never show up on my screen and never take my keyboard. Here is what that took, in the order things broke.</p>
@@ -114,6 +125,9 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </tbody>
 </table>
 <p>There is one Chrome per profile. A hidden caller evicts a headless one; a handover window is protected for 30 minutes and is never reaped while I'm using it. An agent that hits a CAPTCHA doesn't guess or retry. It opens a handover window and files a blocker for me.</p>
+<figure class="dia"><svg viewBox="0 0 680 215" role="img" aria-label="Three browser modes: hidden evicts headless, handover evicts both; a reaper closes idle headless or hidden instances, never handover."><defs><marker id="a-modes" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0 L10 5 L0 10 z"/></marker></defs><rect class="box " x="4" y="40" width="190" height="72" rx="8"/><text x="16" y="64">headless</text><text class="s" x="16" y="82">the default</text><text class="s" x="16" y="98">never on screen</text><rect class="box " x="245" y="40" width="190" height="72" rx="8"/><text x="257" y="64">hidden</text><text class="s" x="257" y="82">sites that refuse headless</text><text class="s" x="257" y="98">minimized, focus-guarded</text><rect class="box gate" x="486" y="40" width="190" height="72" rx="8"/><text x="498" y="64">handover</text><text class="s" x="498" y="82">a blocker only I can clear</text><text class="s" x="498" y="98">on screen, protected 30 min</text><path class="ln" d="M245 76 L196 76" marker-end="url(#a-modes)"/><text class="s" x="220" y="69" text-anchor="middle">evicts</text><path class="ln" d="M486 76 L437 76" marker-end="url(#a-modes)"/><text class="s" x="461" y="69" text-anchor="middle">evicts</text><path class="ln" d="M581 40 C581 4, 99 4, 99 38" marker-end="url(#a-modes)"/><text class="s" x="340" y="28" text-anchor="middle">evicts</text><rect class="box " x="4" y="150" width="431" height="56" rx="8"/><text x="16" y="174">Reaper</text><text class="s" x="16" y="192">launchd, every 120 s: closes headless or hidden after 5 min idle</text><path class="ln dash" d="M99 150 L99 114" marker-end="url(#a-modes)"/><path class="ln dash" d="M340 150 L340 114" marker-end="url(#a-modes)"/><text class="s" x="581" y="134" text-anchor="middle">never reaped while in use</text></svg></figure>
+
+<p><em>Arrows point at the mode that gets closed. Orange marks the one mode that puts a window on my screen.</em></p>
 <h2>6. And then an agent did it anyway</h2>
 <p>I should say how much I care about this. Of everything an agent can do wrong on my machine, interrupting me ranks near the top, above being slow and above being wrong in a way I can fix later. You would think that after all this I'd be done with agents taking over my screen. This week an agent working in my own everyday Chrome (not the automation one) hit a page that renders nothing at all while its window is minimized. It wanted the page, so it un-minimized the window. Focus gone, mid-sentence, again.</p>
 <p>None of the machinery above was in play, because that browser isn't the automation browser. It is mine. The rule that would have stopped it is the one from section 5: when the only way forward is something visible, that's a handover to me, never a call the agent makes on its own. It's now written down as exactly that, and that step is waiting for me.</p>
@@ -126,8 +140,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </ul>
 <hr />
 <p><em>Thanks for reading. Next up: why my agents got more reliable once I took some steps away from them and turned those into plain scripts. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you run agents on your own machine, I'd like to hear what they've done to your screen.</em></p>
-<p>— Denzil</p></article>
-<footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+<p>— <a href="https://denzil10.github.io/">Denzil Nelson</a></p></article>
+<footer><a href="https://denzil10.github.io/">Denzil Nelson</a>, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>
 </html>

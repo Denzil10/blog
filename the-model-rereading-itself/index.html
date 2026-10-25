@@ -8,7 +8,7 @@
 <meta property="og:title" content="88% of my coding agent&#x27;s usage goes on reading">
 <meta property="og:description" content="Token-saving tools shrink what the model writes. I measured 35 days of my own sessions: what it writes is 12%. Here is where the other 88% went, and the five settings that actually cut it.">
 <meta property="og:type" content="article">
-<link rel="alternate" type="application/rss+xml" title="Denzil: writing" href="https://denzil10.github.io/blog/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="Denzil Nelson: writing" href="https://denzil10.github.io/blog/feed.xml">
 <style>
 :root {
   --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
@@ -41,12 +41,23 @@ blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--lin
 .posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
 .posts a:hover { color: var(--accent); }
 .posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+figure.dia { margin: 26px 0 8px; overflow-x: auto; }
+figure.dia svg { width: 100%; min-width: 600px; height: auto; display: block; }
+.dia text { fill: var(--ink); font: 600 13px ui-sans-serif, -apple-system, sans-serif; }
+.dia text.s { fill: var(--ink-2); font-weight: 400; font-size: 12px; }
+.dia text.w { fill: #fff; font-weight: 600; font-size: 12px; }
+.dia .box { fill: var(--panel); stroke: var(--line); }
+.dia .model { stroke: #2a78d6; stroke-width: 2; }
+.dia .gate { stroke: #c4501f; stroke-width: 2; }
+.dia .ln { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.dia .dash { stroke-dasharray: 4 4; }
+.dia .head { fill: var(--ink-3); }
 footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 </style>
 </head>
 <body>
 <main>
-<nav><a href="https://denzil10.github.io/blog/">Denzil · writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<nav><a href="https://denzil10.github.io/">Denzil Nelson</a><a href="https://denzil10.github.io/blog/">Writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
 <article><h1>88% of my coding agent&#x27;s usage goes on reading</h1><p class="meta">2026-10-25</p><p class="lede">Token-saving tools shrink what the model writes. I measured 35 days of my own sessions: what it writes is 12%. Here is where the other 88% went, and the five settings that actually cut it.</p><p>There is a whole genre of tools for making coding agents cheaper, and almost all of them go after the same thing: the words the model writes. Make it answer in fewer sentences. Make it talk like a caveman (there is a skill for that, and it is called <code>caveman</code>). Compress the code it prints. Filter the noise out of shell output before the model sees it.</p>
 <p>I run Claude Code most of the day, with agents working in the background while I do other things, so I care about this a lot. Before trying any of it, I wanted to know one boring thing: what am I actually paying for?</p>
 <p>So I went through 35 days of my own session transcripts and the client's usage stats and split everything into two piles: what the model wrote, and what it read.</p>
@@ -55,6 +66,9 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <p>Every tool in that genre was fighting over the 12%.</p>
 <h2>Why reading is the expensive part</h2>
 <p>A chat with a model is stateless. Each time the agent takes a step (read a file, run a command, think, reply), the client sends the model everything again: instructions, tools, the history, the tool results. Prompt caching makes the repeated part much cheaper per token, but "much cheaper" times "every step" times "hundreds of steps a session" is still the biggest number on the page.</p>
+<figure class="dia"><svg viewBox="0 0 680 170" role="img" aria-label="Three steps of one session: each request re-sends everything before it as cache reads, adds new context as a cache write, and ends in a short output."><text class="s" x="0" y="34">Step 1</text><rect x="64" y="14" width="240" height="30" rx="4" fill="#c4501f"/><text class="w" x="72" y="34">system + tools + your prompt</text><rect x="306" y="14" width="45" height="30" rx="4" fill="#52514e"/><text class="w" x="314" y="34">reply</text><text class="s" x="0" y="78">Step 2</text><rect x="64" y="58" width="285" height="30" rx="4" fill="#2a78d6"/><text class="w" x="72" y="78">all of step 1, re-sent</text><rect x="351" y="58" width="88" height="30" rx="4" fill="#c4501f"/><text class="w" x="359" y="78">tool result</text><rect x="441" y="58" width="45" height="30" rx="4" fill="#52514e"/><text class="w" x="449" y="78">reply</text><text class="s" x="0" y="122">Step 3</text><rect x="64" y="102" width="420" height="30" rx="4" fill="#2a78d6"/><text class="w" x="72" y="122">all of steps 1 and 2, re-sent</text><rect x="486" y="102" width="88" height="30" rx="4" fill="#c4501f"/><text class="w" x="494" y="122">tool result</text><rect x="576" y="102" width="45" height="30" rx="4" fill="#52514e"/><text class="w" x="584" y="122">reply</text><rect x="64" y="150" width="10" height="10" rx="2" fill="#2a78d6"/><text class="s" x="80" y="159">re-sent context (cache read)</text><rect x="270" y="150" width="10" height="10" rx="2" fill="#c4501f"/><text class="s" x="286" y="159">new context (cache write)</text><rect x="460" y="150" width="10" height="10" rx="2" fill="#52514e"/><text class="s" x="476" y="159">output</text></svg></figure>
+
+<p><em>Three steps of one session, drawn to show the shape rather than to scale. Every request re-sends everything before it. The output is the short grey end of each bar.</em></p>
 <p>Two weeks after the first measurement I ran a finer one, 7 days and 11.7k requests, split by the three token types that actually get billed differently:</p>
 <div style="display:flex;height:34px;border-radius:6px;overflow:hidden;gap:2px;margin:22px 0 8px;font:600 13px/34px ui-sans-serif,-apple-system,sans-serif;color:#fff">
 <div style="flex:50;background:#2a78d6;padding-left:10px">Cache read 50%</div>
@@ -113,8 +127,8 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <p>Measure first. Then cut the 88%.</p>
 <hr />
 <p><em>That's it for this one. Next up: the steps I pulled out of the model loop entirely and turned into plain scripts, and why my agents got more reliable when they were allowed to do less. Follow along on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you've measured your own split and got a very different number, I'd like to hear how your work differs.</em></p>
-<p>— Denzil</p></article>
-<footer>Denzil, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+<p>— <a href="https://denzil10.github.io/">Denzil Nelson</a></p></article>
+<footer><a href="https://denzil10.github.io/">Denzil Nelson</a>, AI engineer. I build unattended agent systems and write up what breaks.</footer>
 </main>
 </body>
 </html>
