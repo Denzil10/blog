@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My agents got more reliable when I gave them less to do</title>
+<meta name="description" content="Six steps I moved out of the model loop and into plain scripts: what each one cost while a model did it, what changed after, and the three times the scripts broke instead.">
+<meta property="og:title" content="My agents got more reliable when I gave them less to do">
+<meta property="og:description" content="Six steps I moved out of the model loop and into plain scripts: what each one cost while a model did it, what changed after, and the three times the scripts broke instead.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://denzil10.github.io/blog/fewer-jobs-for-the-model/">
+<meta property="og:image" content="https://denzil10.github.io/blog/fewer-jobs-for-the-model/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="My agents got more reliable when I gave them less to do">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://denzil10.github.io/blog/fewer-jobs-for-the-model/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "My agents got more reliable when I gave them less to do", "description": "Six steps I moved out of the model loop and into plain scripts: what each one cost while a model did it, what changed after, and the three times the scripts broke instead.", "url": "https://denzil10.github.io/blog/fewer-jobs-for-the-model/", "mainEntityOfPage": "https://denzil10.github.io/blog/fewer-jobs-for-the-model/", "datePublished": "2026-11-01", "image": "https://denzil10.github.io/blog/fewer-jobs-for-the-model/og.png", "author": {"@type": "Person", "name": "Denzil Nelson", "url": "https://denzil10.github.io/"}}</script>
+<link rel="alternate" type="application/rss+xml" title="Denzil Nelson: writing" href="https://denzil10.github.io/blog/feed.xml">
+<style>
+:root {
+  --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1a1a19; --panel: #232322; --line: #383835; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #8e8d85; --accent: #6da7ec; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 40px 22px 80px; }
+nav { display: flex; gap: 18px; font-size: 14px; margin-bottom: 44px; }
+nav a { color: var(--ink-2); text-decoration: none; }
+nav a:first-child { color: var(--ink); font-weight: 600; margin-right: auto; }
+a { color: var(--accent); }
+h1 { font-size: clamp(28px, 4.6vw, 40px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 10px; }
+h2 { font-size: 22px; margin: 44px 0 8px; letter-spacing: -0.01em; }
+.meta { color: var(--ink-3); font: 13px ui-monospace, Menlo, monospace; }
+article .meta { margin: 0 0 16px; }
+.lede { color: var(--ink-2); font-size: 18px; margin: 0 0 30px; }
+code { font: .88em ui-monospace, Menlo, monospace; background: var(--panel); padding: 1px 4px; border-radius: 4px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 18px 0; display: block; overflow-x: auto; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; }
+blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--line); color: var(--ink-2); }
+.posts { list-style: none; padding: 0; margin: 0; }
+.posts li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+.posts a:hover { color: var(--accent); }
+.posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+figure.dia { margin: 26px 0 8px; overflow-x: auto; }
+figure.dia svg { width: 100%; min-width: 600px; height: auto; display: block; }
+.dia text { fill: var(--ink); font: 600 13px ui-sans-serif, -apple-system, sans-serif; }
+.dia text.s { fill: var(--ink-2); font-weight: 400; font-size: 12px; }
+.dia text.w { fill: #fff; font-weight: 600; font-size: 12px; }
+.dia .box { fill: var(--panel); stroke: var(--line); }
+.dia .model { stroke: #2a78d6; stroke-width: 2; }
+.dia .gate { stroke: #c4501f; stroke-width: 2; }
+.dia .ln { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.dia .dash { stroke-dasharray: 4 4; }
+.dia .head { fill: var(--ink-3); }
+footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://denzil10.github.io/">Denzil Nelson</a><a href="https://denzil10.github.io/blog/">Writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<article><h1>My agents got more reliable when I gave them less to do</h1><p class="meta">2026-11-01</p><p class="lede">Six steps I moved out of the model loop and into plain scripts: what each one cost while a model did it, what changed after, and the three times the scripts broke instead.</p><p>On 13 October my fleet spent three runs in a row on one button.</p>
+<p>Run 128 tried to publish a queued post and logged <code>publish hung, unverified, no transition</code>. Run 129, two and a half hours later, checked, found the post had never gone out, and logged <code>confirmed unposted, publish button disabled</code>. Run 130 patched the publishing script and logged <code>still disabled after script patch</code>. Each of those was a full model run (a fresh agent reading its instructions, its state files and the playbook, deciding what to do, doing it), and a run like that costs 6 to 8 points of my five-hour subscription window. Three of them went on a button.</p>
+<p>The fix, when it came around noon the next day, was a small change to the browser script: a link field kept focus, and the Publish button stayed disabled until something blurred it. A model was the right tool for finding that. It was the wrong tool for <em>noticing that it hadn't found it yet</em>, three times, at full price.</p>
+<p>That week I started keeping a list of everything the fleet's agents do that has a right answer a script can compute. Whatever was on the list stopped being the model's job.</p>
+<h2>The fleet, briefly</h2>
+<p>The fleet is a set of autopilots on my Mac that run unattended, up to 8 runs a day each, building and launching small digital products. I steer; the agents do the work. I've written before about the first thing it taught me: <a href="https://denzil10.github.io/blog/a-prompt-is-not-a-control/">a rule in a prompt is a request</a>, so the check that matters has to live where the agent can't edit it.</p>
+<p>This post is about the steps after that one. The verifier stops an agent from claiming something it didn't do. It does nothing about an agent doing the right thing badly, slowly, or forty times.</p>
+<h2>The test</h2>
+<p>Here's the test I settled on, and it's the position in this post you're most welcome to argue with:</p>
+<p><strong>If I can write the if-statement, the model shouldn't be the if-statement.</strong></p>
+<p>Is the fleet paused? Is there budget left in this window? Has this lane repeated itself three times? Is a post due? Did the post actually go live? Every one of those has an answer that doesn't depend on taste. A model can get them right most of the time. A ten-line function gets them right every time, or gets them wrong the same way every time, which turns out to matter more.</p>
+<p>What's left for the model is the part with no if-statement: what to build next, what to write, how to read a page that changed its layout, what a failing log line probably means.</p>
+<figure class="dia"><svg viewBox="0 0 680 210" role="img" aria-label="One hourly batch: preflight guards, the publishing pacer, the stall rule, the usage-limits gate, then the worker run (the only model step), then the verifier. A failing guard, stall rule or limits gate skips the batch or the lane and logs why."><defs><marker id="a-steps" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0 L10 5 L0 10 z"/></marker></defs><rect class="box gate" x="4" y="20" width="98" height="78" rx="8"/><text x="12" y="44">Guards</text><text class="s" x="12" y="62">home network,</text><text class="s" x="12" y="77">pause deadline</text><rect class="box " x="116" y="20" width="98" height="78" rx="8"/><text x="124" y="44">Pacer</text><text class="s" x="124" y="62">publishes one</text><text class="s" x="124" y="77">post if due,</text><text class="s" x="124" y="92">reads it back</text><rect class="box gate" x="228" y="20" width="98" height="78" rx="8"/><text x="236" y="44">Stall rule</text><text class="s" x="236" y="62">skips a lane</text><text class="s" x="236" y="77">stuck for</text><text class="s" x="236" y="92">3 runs</text><rect class="box gate" x="340" y="20" width="98" height="78" rx="8"/><text x="348" y="44">Usage limits</text><text class="s" x="348" y="62">reads the real</text><text class="s" x="348" y="77">window, skips</text><text class="s" x="348" y="92">if over</text><rect class="box model" x="452" y="20" width="98" height="78" rx="8"/><text x="460" y="44">Worker run</text><text class="s" x="460" y="62">decides what</text><text class="s" x="460" y="77">to build and</text><text class="s" x="460" y="92">writes it</text><rect class="box gate" x="564" y="20" width="98" height="78" rx="8"/><text x="572" y="44">Verifier</text><text class="s" x="572" y="62">demotes</text><text class="s" x="572" y="77">claims with</text><text class="s" x="572" y="92">no evidence</text><path class="ln" d="M102 59 L114 59" marker-end="url(#a-steps)"/><path class="ln" d="M214 59 L226 59" marker-end="url(#a-steps)"/><path class="ln" d="M326 59 L338 59" marker-end="url(#a-steps)"/><path class="ln" d="M438 59 L450 59" marker-end="url(#a-steps)"/><path class="ln" d="M550 59 L562 59" marker-end="url(#a-steps)"/><rect class="box " x="4" y="146" width="434" height="48" rx="8"/><text x="14" y="168">Skip the batch or the lane</text><text class="s" x="14" y="185">and log the reason</text><path class="ln dash" d="M53 98 L53 144" marker-end="url(#a-steps)"/><path class="ln dash" d="M277 98 L277 144" marker-end="url(#a-steps)"/><path class="ln dash" d="M389 98 L389 144" marker-end="url(#a-steps)"/></svg></figure>
+
+<p><em>One hourly batch. Five of the six boxes are plain scripts. The blue one is the only place a model gets a say, and it's also the only one I'd struggle to unit-test.</em></p>
+<h2>1. Checking claims (September)</h2>
+<p>This one came first, and I covered it <a href="https://denzil10.github.io/blog/a-prompt-is-not-a-control/">in the earlier post</a>, so I'll only say how it fits the test. "Does this record that says <em>listed</em> have evidence of a live listing?" is an if-statement. Asking the agent that wrote the record whether it was telling the truth was never going to work. A 126-line script that runs after every run and demotes anything unbacked does.</p>
+<h2>2. Pausing, with an end date (22 September)</h2>
+<p>I asked for a two-day stop while I finished some setup. The fleet's pause was a file, <code>state/paused</code>: if it exists, nothing runs. That's fine until the human who said "two days" forgets, and then it's a two-week stop.</p>
+<p>So the pause file can now hold a timestamp, and the guard lifts the pause itself when the time passes:</p>
+<pre><code class="language-bash">case &quot;$deadline&quot; in
+  &quot;&quot;) echo &quot;paused (state/paused exists)&quot;; return 0 ;;
+  [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T*Z)
+    if [ &quot;$deadline&quot; \&gt; &quot;$(date -u +%FT%TZ)&quot; ]; then echo &quot;paused until $deadline (state/paused)&quot;; return 0; fi
+    rm -f state/paused; return 1 ;;
+  # Anything else is a note, not a deadline. A note never lifts a pause.
+  *) echo &quot;paused ($(head -c 60 state/paused | tr -d '\n'))&quot;; return 0 ;;
+esac
+</code></pre>
+<p><em>From the fleet's preflight guards. The last branch is my favourite line in the file: if I write a note in the pause file instead of a date, the fleet stays paused, because a typo should never be what un-pauses it.</em></p>
+<p>No agent is ever asked whether it's time to resume. It never sees the question.</p>
+<h2>3. Budget: reading the real number (22–26 September)</h2>
+<p>The fleet runs on a Claude subscription I also use myself. The first version estimated usage from local logs and gave the autopilots a share of it. On 22 September I replaced the estimate with a read of the actual subscription windows (the same numbers Claude Code's <code>/usage</code> shows), recorded before and after every run.</p>
+<p>Four days of readings showed me the estimate was fiction. A single run cost 6 to 8 points of the five-hour window and 0.5 to 1 point of the weekly one, which meant the autopilot alone would have emptied a week in three days. The share I'd assumed for the autopilot was borrowed from another setup and was simply wrong here. I'd have kept believing it if a model had been doing the pacing, because a model doing the pacing would have been reading the same estimate.</p>
+<p>Now the gate is a threshold on a measured number, and it says why it skipped. From the run log on 21 October:</p>
+<pre><code class="language-text">SKIP portfolios/[lane] — limits: seven_day at 95% is 5.0 points over its 90% mark; resets 2026-10-25T07:59:59Z
+</code></pre>
+<p><em>The weekly window was nearly gone. The gate kept the fleet from spending the rest, and the same line says when the window resets.</em></p>
+<h2>4. Finding the binary (26 September), or: the script was the bug</h2>
+<p>Here's the first time moving a step into code bit me.</p>
+<p>The runner had the path to the <code>claude</code> binary hardcoded to where Homebrew used to install it. On 23 September the Homebrew cask was replaced by the native installer, which lives somewhere else. From then on, every run died about five seconds in, and the runner logged it as <code>tick log unparseable</code>. Over 23–26 September that line appears 90 times: 9, then 22, then 47, then 12 before the fix. Three days of total failure, and nothing about it was loud.</p>
+<p>The fix was a function that looks in the places the binary can be, picks the first one that's executable, and fails the batch if none are:</p>
+<pre><code class="language-bash">resolve_claude() {
+  local c
+  for c in &quot;$HOME/.local/bin/claude&quot; /opt/homebrew/bin/claude &quot;$(command -v claude 2&gt;/dev/null)&quot;; do
+    [ -n &quot;$c&quot; ] &amp;&amp; [ -x &quot;$c&quot; ] &amp;&amp; { echo &quot;$c&quot;; return 0; }
+  done
+  return 1
+}
+</code></pre>
+<p>This is the honest cost of the whole approach. Deterministic code fails too, every single time, at machine speed. What it doesn't do is fail <em>differently</em> every time. Ninety identical log lines are a bug report. Ninety different, plausible-sounding agent summaries would have been a mystery.</p>
+<h2>5. Deciding it's stuck (14 October)</h2>
+<p>Back to the button. The real problem on 13 October wasn't that the agent couldn't fix the button: it eventually did. It was that each run started fresh, saw the same unfinished item, and tried again, and nothing in the system thought three identical failures were worth mentioning.</p>
+<p>The stall rule is a script that runs before each run and reads git. A run counts as stuck if its commits touched none of the files that represent progress (the publish queue, the products, the ledger). Three stuck runs in a row on the same work item, and the lane is skipped and one blocker is filed for me. Why three: each autopilot gets at most 8 runs a day, so three is 3 to 9 hours of retries, and every transient failure in the history cleared on the very next run. Two would also have parked a lane that was deliberately killing a product.</p>
+<p>It shipped at 12:13 on 14 October. That night it parked a lane after runs 134–136, which is exactly what it was for.</p>
+<p>And then it went quiet for four days.</p>
+<p>Runs 134–136 were stuck because the lane had used its daily publishing cap: nothing <em>to</em> do, which looks identical to "can't do anything" if all you count is files touched. The park had no expiry, so from 15 to 18 October that lane ran zero times and published nothing, and the only signal was an absence.</p>
+<p>The fix on 19 October did two things. Runs that stopped because of a cap no longer count as stuck. And a park lasts one UTC day: the next day one run goes ahead, and if it repeats the same outcome, the lane stays parked <em>and</em> a blocker goes onto my dashboard. A park can't go silent for days again, because silence is now a state the script reports.</p>
+<h2>6. Publishing (19 October)</h2>
+<p>This was the big one, and the reason I started the list.</p>
+<p>Before 19 October, a worker run published posts. That meant the agent loaded its whole context, decided a post was due, drove the browser, and then reported whether it had worked. Every published post cost one model run, and every "published" was the agent's own account of what happened.</p>
+<p>Now there's a pacer, a Python script that runs at the start of every hourly batch, before any model is involved. Its rule is short. A post is due if there's an unposted row in the queue, today's count is under the cap (6 a day), and the last post is at least 120 minutes old. If it's due, it publishes exactly one, then reads the account's own list of posts back and records the URL it finds <em>there</em> (never the URL the browser happened to be on). The publishing script refuses to run unless the pacer is the one calling it. Worker runs now only refill the queue.</p>
+<p>I grepped both scripts for any call to a model before writing that paragraph: there isn't one.</p>
+<p>Here's the part where I'd love to show you a hockey stick, and can't. Posts per day from the queue file:</p>
+<pre><code class="language-text">before (a model run per post)   10-10: 3   10-11: 4   10-12: 2   10-13: 1   10-14: 4
+parked, see above               10-15 .. 10-18: 0
+after (the pacer, no model)     10-19: 2   10-20: 1   10-21: 2   10-22: 6   10-23: 5
+                                10-24: 4   10-25: 0   10-26: 2
+</code></pre>
+<p><em>14 posts in five days before, 22 in eight days after. The averages are about the same.</em></p>
+<p>The low days after the switch each have a cause I can name. 19 October was a partial first day. On 20 and 21 October, the platform's list sometimes took a while to show a new post, the pacer treated "not in the list yet" as a failure, and stopped for the day. The 22 October fix holds a clean publish as pending and re-reads it on later runs, and that day was the first time the pacer reached its cap: 6 of 6. On 25 October nothing ran at all, because the home-network guard couldn't read the router's address and skipped 21 batches that day. It's built to fail closed (the fleet doesn't run on networks it can't identify), so a day of nothing is the guard doing its job, if annoyingly.</p>
+<p>So the pacer didn't make posting faster. What it did:</p>
+<ul>
+<li>Posting went from one model run per post to zero, so those subscription points go to work only a model can do.</li>
+<li>Every recorded URL was read off the platform after the fact, by code, so "published" means something I can check.</li>
+<li>When it fails, it fails with a named reason, and I can fix that reason once instead of watching three runs rediscover it.</li>
+</ul>
+<h2>The one from 27 October</h2>
+<p>I wasn't planning to have a fresh example, but the stall rule supplied one early on 27 October, while I was drafting this. It parked a lane after runs 172–174. Each of those runs said it had added a new section to a reference page the lane maintains: sections 22, 23 and 24. I checked the live page while writing this, and all three sections are there.</p>
+<p>So why parked? Because that page lives in a different repository, and the stall rule only counts commits to the files <em>it</em> watches. In the fleet's repo, those three runs touched a journal and a metrics file and nothing else, which by the rule's definition is no progress.</p>
+<p>I didn't clear it, and I didn't have to. Since the 19 October fix a park lasts one UTC day, so the lane got one run later that day. Run 175, at 16:53, turned sections 22–24 into three posts in the publish queue. The queue is a file the rule watches, so that counted as progress and the lane carried on.</p>
+<p>Then it did the same thing four more times. The rule parked the lane once on each UTC day from 28 to 31 October (runs 182–184, 189–191, 193–195 and 197–199), and every cycle had the same shape: a few runs that added sections, audited listings or read metrics without touching a watched file, a park, and then the next day's single run refilled the queue with three posts, which counts as progress and lets the lane run again. By 31 October the page was up to section 40. Sales are still zero.</p>
+<p>Two things in that loop are worth pulling apart. The first is the one I wanted: the pacer published straight through every park, 18 posts from 27 to 31 October, four of them on the 31st after that day's park. Publishing no longer waits for the worker to be allowed to run. The second is a gap I didn't see coming. The escalation I described above fires only when the resume run repeats the stuck outcome, and a queue refill never does. So a lane can spend a good part of every day parked and never reach my dashboard. Each park wrote its reason to the lane's blocker file; none of them turned into something that asks for me.</p>
+<p>So the rule was right that something was off, and wrong about what. The sections were real work that reached the watched files a run late, and the rule can't see across repositories. Whether forty reference sections are the best use of a lane with no sales is a judgement call with no if-statement in it, which by this post's own test makes it the model's question, or mine. The script's job is to make sure that question reaches me, and right now it doesn't. The fix I'd make is to count parks per week as well as repeats per resume. It isn't built yet.</p>
+<h2>What's still the model's job</h2>
+<p>I'm not working toward a fleet with no model in it. Everything above is plumbing, and the plumbing used to sit inside the agent's context, competing with the actual work. Now a worker run starts already knowing it's allowed to run, that there's budget, that it isn't stuck, and that publishing is someone else's problem. What it's asked is the hard part: what should this lane build next, and is the thing it built any good?</p>
+<p>That's also why I'd call it more reliable and not just cheaper. The failures I see now are mostly of two kinds: a script that's wrong the same way every time (the binary path, the four silent days, the slow list), which I fix once; and a model making a judgement call I disagree with, which is the conversation I actually want to be having with it.</p>
+<h2>What I'd tell you to do</h2>
+<ul>
+<li>Go through one day of your agent's logs and mark every decision that had a right answer. Each one is a candidate for a script.</li>
+<li>Start with the questions that run before the agent does: should it run, is there budget, is it stuck. They're the cheapest to move and the agent shouldn't be the one answering them anyway.</li>
+<li>Read the real number. If your budget, quota or rate limit comes from an estimate, the agent and the guard are both pacing against the same wrong figure.</li>
+<li>Make every guard print why it said no. A skip with a reason is a log line. A skip without one is four quiet days.</li>
+<li>Give every "stop" an expiry and an escalation, and count stops across days, not only in a row. A park that lasts forever is an outage nobody gets paged for, and a park that comes back every day is the same outage in instalments.</li>
+<li>Expect the scripts to break, and be glad they break the same way every time.</li>
+</ul>
+<hr />
+<p><em>Thanks for reading. Next up: the same idea pointed at my own coding agent, where the rules I care about most ("never push to a work repo from a personal one") moved out of the prompt and into a hook that denies the tool call. It's public, with its tests: <a href="https://github.com/Denzil10/agent-setup">agent-setup</a>. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If you've moved a step out of your agent's hands and it got worse, I'd especially like to hear about it.</em></p>
+<p>— <a href="https://denzil10.github.io/">Denzil Nelson</a></p></article>
+<footer><a href="https://denzil10.github.io/">Denzil Nelson</a>, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+</main>
+</body>
+</html>
