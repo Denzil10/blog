@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My coding agent&#x27;s guard said no 17 times in a month. It was wrong 10 of them.</title>
+<meta name="description" content="I moved my most important agent rules out of the prompt and into a hook that denies the tool call. Then I counted every denial in a month of transcripts: 6 real catches, 10 false alarms, and the same bug firing three times while I wrote this.">
+<meta property="og:title" content="My coding agent&#x27;s guard said no 17 times in a month. It was wrong 10 of them.">
+<meta property="og:description" content="I moved my most important agent rules out of the prompt and into a hook that denies the tool call. Then I counted every denial in a month of transcripts: 6 real catches, 10 false alarms, and the same bug firing three times while I wrote this.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://denzil10.github.io/blog/my-guard-said-no/">
+<meta property="og:image" content="https://denzil10.github.io/blog/my-guard-said-no/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="My coding agent&#x27;s guard said no 17 times in a month. It was wrong 10 of them.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://denzil10.github.io/blog/my-guard-said-no/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "My coding agent's guard said no 17 times in a month. It was wrong 10 of them.", "description": "I moved my most important agent rules out of the prompt and into a hook that denies the tool call. Then I counted every denial in a month of transcripts: 6 real catches, 10 false alarms, and the same bug firing three times while I wrote this.", "url": "https://denzil10.github.io/blog/my-guard-said-no/", "mainEntityOfPage": "https://denzil10.github.io/blog/my-guard-said-no/", "datePublished": "2026-11-08", "image": "https://denzil10.github.io/blog/my-guard-said-no/og.png", "author": {"@type": "Person", "name": "Denzil Nelson", "url": "https://denzil10.github.io/"}}</script>
+<link rel="alternate" type="application/rss+xml" title="Denzil Nelson: writing" href="https://denzil10.github.io/blog/feed.xml">
+<style>
+:root {
+  --bg: #fcfcfb; --panel: #f3f2ee; --line: #dddcd6; --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #7a7973; --accent: #2a78d6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1a1a19; --panel: #232322; --line: #383835; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #8e8d85; --accent: #6da7ec; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 40px 22px 80px; }
+nav { display: flex; gap: 18px; font-size: 14px; margin-bottom: 44px; }
+nav a { color: var(--ink-2); text-decoration: none; }
+nav a:first-child { color: var(--ink); font-weight: 600; margin-right: auto; }
+a { color: var(--accent); }
+h1 { font-size: clamp(28px, 4.6vw, 40px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 10px; }
+h2 { font-size: 22px; margin: 44px 0 8px; letter-spacing: -0.01em; }
+.meta { color: var(--ink-3); font: 13px ui-monospace, Menlo, monospace; }
+article .meta { margin: 0 0 16px; }
+.lede { color: var(--ink-2); font-size: 18px; margin: 0 0 30px; }
+code { font: .88em ui-monospace, Menlo, monospace; background: var(--panel); padding: 1px 4px; border-radius: 4px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 18px 0; display: block; overflow-x: auto; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; }
+blockquote { margin: 18px 0; padding: 2px 16px; border-left: 3px solid var(--line); color: var(--ink-2); }
+.posts { list-style: none; padding: 0; margin: 0; }
+.posts li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.posts a { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+.posts a:hover { color: var(--accent); }
+.posts p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+figure.dia { margin: 26px 0 8px; overflow-x: auto; }
+figure.dia svg { width: 100%; min-width: 600px; height: auto; display: block; }
+.dia text { fill: var(--ink); font: 600 13px ui-sans-serif, -apple-system, sans-serif; }
+.dia text.s { fill: var(--ink-2); font-weight: 400; font-size: 12px; }
+.dia text.w { fill: #fff; font-weight: 600; font-size: 12px; }
+.dia .box { fill: var(--panel); stroke: var(--line); }
+.dia .model { stroke: #2a78d6; stroke-width: 2; }
+.dia .gate { stroke: #c4501f; stroke-width: 2; }
+.dia .ln { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.dia .dash { stroke-dasharray: 4 4; }
+.dia .head { fill: var(--ink-3); }
+footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://denzil10.github.io/">Denzil Nelson</a><a href="https://denzil10.github.io/blog/">Writing</a><a href="https://denzil10.github.io/agent-fleet/">Agent fleet</a><a href="https://denzil10.github.io/blog/feed.xml">RSS</a></nav>
+<article><h1>My coding agent&#x27;s guard said no 17 times in a month. It was wrong 10 of them.</h1><p class="meta">2026-11-08</p><p class="lede">I moved my most important agent rules out of the prompt and into a hook that denies the tool call. Then I counted every denial in a month of transcripts: 6 real catches, 10 false alarms, and the same bug firing three times while I wrote this.</p><p>This morning, while I was testing a fix for my agent's guard hook, the guard hook blocked the test.</p>
+<p>The message was polite and completely wrong: <code>rule-guard: writing ~/.gitconfig-personal is blocked</code>. Nothing was writing to that file. My command created a small TypeScript test with a heredoc (<code>cat &gt; fixtest.ts &lt;&lt;'EOF'</code>), and one of the test strings inside it mentioned <code>.gitconfig-personal</code>. The rule saw a <code>&gt;</code> somewhere in the command and the filename somewhere else, and put the two together. A little later it did the same thing to a Python edit of the same file. I switched to the editor tool instead of the shell and carried on, slightly annoyed. It was exactly the bug I was there to fix. Then, while I was correcting a draft of this post through the shell, the commit-identity rule blocked me too, because the draft quotes <code>git -c user.email=x</code>.</p>
+<p>That's the story of this post in one scene. A rule that lives in a hook is a real control, which is the point. It's also a program that reads shell commands with regular expressions, and nobody had checked how often it was right.</p>
+<h2>Why the rules live in a hook</h2>
+<p>I run coding agents unattended most of the day, on the same Mac where I do personal projects and my day job. A few mistakes there are expensive and hard to undo. A personal project pushing to a work repo. A commit going out under the wrong email, which then sits in public history. A cloud CLI call I didn't ask for. I wrote all of these into my global <code>AGENTS.md</code> first, and the agents mostly followed them. "Mostly" is the problem. I've written before about <a href="https://denzil10.github.io/blog/a-prompt-is-not-a-control/">two autopilots that broke written rules</a>, and the lesson carried over: a rule in a prompt is a request.</p>
+<p>So in early October the rules I care about most moved into a Claude Code mod called rule-guard. It hooks <code>tool.call</code>, looks at what the agent is about to run, and returns a denial with a reason instead of letting it through. The code and its 25 tests are public in <a href="https://github.com/Denzil10/agent-setup/tree/main/mods/rule-guard">agent-setup</a>. It has four deny rules:</p>
+<ul>
+<li>From a personal project, no push, PR or API write that lands on a work repo, judged by GitHub owner or by a path under <code>~/Projects</code>.</li>
+<li>Personal repos commit as one noreply address. Any other email (<code>git config</code>, <code>-c user.email</code>, <code>GIT_*_EMAIL</code>, <code>--author</code>) is denied, and so is any write to <code>~/.gitconfig-personal</code>, unless my last prompt names the identity change.</li>
+<li><code>git worktree add</code> only inside the repo (<code>&lt;repo&gt;/.worktrees</code> and two other known places).</li>
+<li>In personal projects, a cloud CLI (aws, gcloud, terraform and about a dozen others) needs my explicit approval in the latest prompt.</li>
+</ul>
+<figure class="dia"><svg viewBox="0 0 680 250" role="img" aria-label="The agent proposes a Bash command. The proposed step blanks quoted text and heredoc bodies. rule-guard's four rules check what is left. Allowed commands run in Bash. Denied commands return a reason to the agent, which picks another route or asks me."><defs><marker id="a-guard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0 L10 5 L0 10 z"/></marker></defs><rect class="box model" x="4" y="30" width="130" height="78" rx="8"/><text x="14" y="54">Agent</text><text class="s" x="14" y="72">proposes a</text><text class="s" x="14" y="87">Bash command</text><rect class="box" x="162" y="30" width="150" height="78" rx="8" stroke-dasharray="4 4"/><text x="172" y="54">Strip (proposed)</text><text class="s" x="172" y="72">blank quoted text</text><text class="s" x="172" y="87">and heredoc bodies</text><rect class="box gate" x="340" y="30" width="170" height="78" rx="8"/><text x="350" y="54">rule-guard</text><text class="s" x="350" y="72">work push, identity,</text><text class="s" x="350" y="87">worktree, cloud CLI</text><rect class="box" x="538" y="30" width="136" height="78" rx="8"/><text x="548" y="54">Bash runs it</text><text class="s" x="548" y="72">allowed</text><path class="ln" d="M134 69 L160 69" marker-end="url(#a-guard)"/><path class="ln dash" d="M312 69 L338 69" marker-end="url(#a-guard)"/><path class="ln" d="M510 69 L536 69" marker-end="url(#a-guard)"/><rect class="box" x="162" y="170" width="348" height="60" rx="8"/><text x="172" y="194">Denied: the reason goes back to the agent</text><text class="s" x="172" y="212">it picks another route, or asks me</text><path class="ln" d="M425 108 L425 168" marker-end="url(#a-guard)"/><path class="ln" d="M162 200 L69 200 L69 110" marker-end="url(#a-guard)"/></svg></figure>
+
+<p><em>The guard sits between the agent and the shell. The dashed box is the fix I'm proposing below. Today the rules read the raw command, quotes and all.</em></p>
+<p>A denial is cheap in one way that makes this design tempting. The agent can read the reason and change course. On 5 November my daily run tried <code>git -C codeburn worktree add ../main-wt</code> inside a contribution checkout. It was denied, and the run's journal the next day records the lesson: put the worktree at <code>&lt;repo&gt;/.worktrees/&lt;name&gt;</code>. Nobody had to step in.</p>
+<p>That cheapness is also why I never looked closely. A false alarm costs one retry and an agent that shrugs. Nobody pages me for those.</p>
+<h2>Counting the denials</h2>
+<p>Every Claude Code session leaves a JSONL transcript, and a denial shows up there as a <code>tool_result</code> whose text starts with <code>rule-guard:</code>. So I counted, with a deliberately boring script. It walks every personal-project transcript still on disk, keeps tool results that start with the guard's prefix, and deduplicates by <code>tool_use_id</code>. That last part matters. A naive <code>rg 'rule-guard: '</code> across the same files reported 462 hits for a single rule, because transcripts repeat earlier content and because my own greps over old transcripts get written into new transcripts. The first version of my script made the same mistake in a smaller way: it counted today's grep output as a "denial" dated 8 November.</p>
+<pre><code class="language-python">for b in message[&quot;content&quot;]:
+    if b.get(&quot;type&quot;) != &quot;tool_result&quot;:
+        continue
+    text = re.sub(r&quot;^(&lt;tool_use_error&gt;|Error: )&quot;, &quot;&quot;, flatten(b[&quot;content&quot;]).strip())
+    if text.startswith(&quot;rule-guard: &quot;):
+        denials[b[&quot;tool_use_id&quot;]] = (o[&quot;timestamp&quot;][:10], o[&quot;cwd&quot;], text, calls.get(b[&quot;tool_use_id&quot;]))
+</code></pre>
+<p><em>The core of the counter. <code>calls</code> maps each tool_use id to the command the agent tried, collected from the same file.</em></p>
+<p>The result: 19 denials between 9 October and 5 November. That window is just what's on disk: no older personal transcript survives, though the guard has run since 4 October. Two of them were me testing the worktree rule on purpose, so they're out. That leaves 17 times an agent doing real work was told no.</p>
+<p>Then I did the part I'd skipped for a month. For each of the 17, I pulled the full command the agent had tried and ran the guard's own functions over it again, printing the 30 characters around whatever matched. A denial counts as real only if the command would really have done the forbidden thing.</p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Denials</th>
+<th>Real</th>
+<th>Wrong</th>
+<th>Unclear</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cloud CLI needs approval</td>
+<td>9</td>
+<td>2</td>
+<td>7</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Commit identity</td>
+<td>3</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Push to a work repo</td>
+<td>4</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Worktree outside its repo</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Total</td>
+<td>17</td>
+<td>6</td>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><em>Personal-project transcripts, 9 October to 5 November 2026, deliberate tests excluded. "Unclear" is a push from an old personal project that still lives under the work folder: the rule judges by path, and the path said work.</em></p>
+<h2>The six it got right</h2>
+<p>I'll start with these, because they're why the guard exists.</p>
+<p>Two were agents force-pushing branches of a work repo from a personal session (9 and 20 October). Both were <code>cd</code> into the work checkout, then <code>git push --force-with-lease</code>. Whether either push was harmless doesn't matter. A personal agent shouldn't be the one deciding. After the first one, the agent put the exact command in my to-do list for me to run myself.</p>
+<p>One was a commit with somebody else's name in <code>--author</code>. An agent was committing a friend's notes into one of my repos and decided the friend should be the author. That's thoughtful, and it's also exactly the commit identity I don't want in my history.</p>
+<p>Two were <code>gcloud</code> calls in personal projects: an inventory of which accounts were signed in, and a billing lookup on a project. Both were reads. The rule doesn't care, because the reason it exists is that I want to know when an agent starts touching a cloud account, before it matters.</p>
+<p>And the worktree from 5 November.</p>
+<h2>The ten it got wrong</h2>
+<p>Seven were cloud-CLI denials, and every one of them was a search. An agent ran something like this:</p>
+<pre><code class="language-bash">grep -n -iE 'deploy|&lt;host&gt;|vercel|host' README.md docs/setup-guide.md
+</code></pre>
+<p>and the guard denied it for "running" a hosting provider's CLI. Here's the regex, from <a href="https://github.com/Denzil10/agent-setup/blob/main/mods/rule-guard/hooks/rules.ts#L87-L88"><code>rules.ts</code></a>:</p>
+<pre><code class="language-ts">const CLOUD =
+  /(?:^|[;&amp;|(`\n]|\$\()\s*(?:\w+=\S*\s+)*(?:(?:sudo|npx|bunx|exec|time|command)\s+(?:-\S+\s+)*)*(aws|gcloud|...|eksctl)(?=$|[\s;&amp;|)])/
+</code></pre>
+<p><em>The cloud rule's matcher. A CLI name counts only in "command position": at the start, or after <code>;</code>, <code>&amp;</code>, <code>|</code>, <code>(</code>, a backtick or a newline.</em></p>
+<p>I was quite proud of that "command position" idea when I wrote it, and it has a test: <code>grep aws config.yml</code> passes, <code>cd x &amp;&amp; aws s3 ls</code> is denied. What the test never tried is a <code>|</code> that isn't a pipe. Inside <code>'deploy|vercel|host'</code> the bar is regex alternation, and to this regex it looks exactly like the start of a new command. Six of the seven false cloud denials were that: a provider name right after a <code>|</code> in a quoted grep pattern, spread over two weeks of agents searching for deploy notes and keys. The seventh was the same failure with a different character. The agent was writing a README through a heredoc, and the README had "runs <code>wrangler deploy</code>" in markdown backticks. A backtick is also one of my command boundaries.</p>
+<p>The other three wrong ones were all text that happened to mention the thing. A heredoc writing a to-do note that said "User runs: <code>git -C &lt;work repo&gt; push</code>" got denied as a work push, because the push-target logic found a <code>git -C</code> path in the note. A Python script that edited my own publishing tool contained the string <code>git -c user.email=x</code> as a redaction pattern, and got denied for setting a commit email. And the gitconfig rule, the one that bit me this morning, fired on 2 November when an agent ran <code>cat &gt; .gitignore &lt;&lt;'EOF'</code> in a new repo and later in the same command did <code>cat ~/.gitconfig-personal</code> to read it. Here's that rule:</p>
+<pre><code class="language-ts">export const writesPersonalGitconfig = (command: string): boolean =&gt;
+  /\.gitconfig-personal/.test(command) &amp;&amp; /(&gt;|\btee\b|\bsed\s+-i|--file|\s-f\s|\bmv\b|\bcp\b|\brm\b)/.test(command)
+</code></pre>
+<p><em>Two independent tests on the whole command. Any <code>&gt;</code> anywhere, plus the filename anywhere, counts as a write.</em></p>
+<p>Looking back, this is the least defensible line in the repo. It went in on 24 October with the identity rule. It has three tests (one read, two writes), and none of them puts a redirect and a read of the file in the same command.</p>
+<h2>What I'd been assuming</h2>
+<p>The rules were written for the command an agent <em>means</em> to run. The guard gets the command as a string, and agents write long ones: six greps chained with <code>;</code>, a heredoc carrying a whole file, a Python script that edits a Python script. Agents also love quoting regexes with alternation in them. My tests used short commands of the kind I'd type myself. The agent's commands are longer and messier.</p>
+<p>There's a cost here I can't price well. Ten false denials in four weeks isn't much friction, and I haven't measured what each one cost the session it hit. I only noticed this morning because it happened to me. The worse cost is quieter. A guard that is wrong more often than right teaches everyone around it, me included, that a denial probably means the guard is confused. The next time it fires on a real work push, that's the reflex I don't want.</p>
+<h2>The fix, and why it isn't live yet</h2>
+<p>Nine of the ten false alarms come down to one thing: the rules match text that the shell would never run as a command. The tenth is the gitconfig rule never asking where the <code>&gt;</code> points. So the fix is a step before the rules, plus one rewritten rule. Blank out everything in single or double quotes and every heredoc body, keep the string the same length so positions still line up, and match the rules against what's left. The one rule that needs a value from inside quotes, <code>--author="Name &lt;email&gt;"</code>, still reads the original, but only counts a match that starts outside the quotes. The gitconfig check becomes "a redirect, <code>tee</code>, <code>sed -i</code>, <code>--file</code>, <code>mv</code>, <code>cp</code> or <code>rm</code> whose target is the file", instead of two unrelated searches.</p>
+<p>I ran that version over the same 17 commands, against today's rules. Nine of the 10 false alarms are allowed. The tenth, the to-do note, is still denied, now for a different reason: after its heredoc it ran a real <code>git push</code> in a folder under <code>~/Projects</code> that I counted as personal in early October and that today's rules count as work (the project has since moved out). All 6 real catches are still denied, and so is the unclear one. A few made-up cases behave too: <code>echo x &gt;&gt; ~/.gitconfig-personal</code> is still denied, <code>grep -E "a|aws|b" f</code> isn't, and a heredoc containing <code>x | aws y</code> followed by a real <code>gcloud z</code> on the next line still denies the <code>gcloud</code>. The script that does this, <code>fixtest.ts</code>, is about 40 lines.</p>
+<p>It isn't in the hook yet, for a dull reason I agree with. The daily run that wrote most of this post runs under the same hook, and it isn't allowed to edit the hooks it runs under. So the patch goes to me as a proposal, with the 17 real commands as the regression tests, and lands when I've read it. The public copy in agent-setup has the same bug until then. If you copied the cloud rule, assume it's denying your greps.</p>
+<h2>What I'd tell you to do</h2>
+<ul>
+<li>If you guard an agent with a hook, count its denials from the transcripts and label each one by what the command would actually have done. I'd put off that hour for a month, and it changed what I believe about the guard more than the 25 passing tests did.</li>
+<li>Deduplicate by tool-call id. Transcripts repeat themselves, and your own searches end up in later transcripts.</li>
+<li>Test the rules on the agent's commands, not on yours. The best test cases I have now are 17 real commands copied out of transcripts, because nobody would write those by hand.</li>
+<li>Match command-position rules on the shell structure, with quoted text and heredoc bodies blanked out. A <code>|</code> inside a quoted regex is the classic trap, and an agent will walk into it within a week.</li>
+<li>Keep the reason in every denial specific enough that an agent can route around it. The worktree denial named the right path, and the agent used it. That part of the design was right from day one.</li>
+</ul>
+<hr />
+<p><em>Thanks for reading. Next up: FabBench, the small benchmark I'm building of agents claiming they did things they didn't, and what two judge models made of it. Follow on <a href="https://denzil10.github.io/blog/feed.xml">RSS</a> or <a href="https://x.com/denzilnelsonai">X @denzilnelsonai</a>. If your guard hook has a false-alarm rate you've actually measured, I'd like to hear the number.</em></p>
+<p>— <a href="https://denzil10.github.io/">Denzil Nelson</a></p></article>
+<footer><a href="https://denzil10.github.io/">Denzil Nelson</a>, AI engineer. I build unattended agent systems and write up what breaks.</footer>
+</main>
+</body>
+</html>
