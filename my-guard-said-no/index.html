@@ -151,7 +151,7 @@ footer { margin-top: 60px; color: var(--ink-3); font-size: 13px; }
 <p>Two were <code>gcloud</code> calls in personal projects: an inventory of which accounts were signed in, and a billing lookup on a project. Both were reads. The rule doesn't care, because the reason it exists is that I want to know when an agent starts touching a cloud account, before it matters.</p>
 <p>And the worktree from 5 November.</p>
 <h2>The ten it got wrong</h2>
-<p>Seven were cloud-CLI denials, and every one of them was a search. An agent ran something like this:</p>
+<p>Seven were cloud-CLI denials, and six of them were searches. An agent ran something like this:</p>
 <pre><code class="language-bash">grep -n -iE 'deploy|&lt;host&gt;|vercel|host' README.md docs/setup-guide.md
 </code></pre>
 <p>and the guard denied it for "running" a hosting provider's CLI. Here's the regex, from <a href="https://github.com/Denzil10/agent-setup/blob/main/mods/rule-guard/hooks/rules.ts#L87-L88"><code>rules.ts</code></a>:</p>
